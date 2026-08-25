@@ -112,6 +112,16 @@ function KeyCap({
               {formatCount(count)}
             </span>
           )}
+          {hovered && (
+            <span
+              className="pointer-events-none absolute left-1/2 top-0 z-30 whitespace-nowrap rounded-md bg-slate-800/90 px-2 py-1 font-mono text-[11px] font-semibold text-white shadow-lg"
+              style={{
+                transform: "translate3d(-50%, calc(-100% - 8px), 48px)",
+              }}
+            >
+              {keyDef.label} · {formatCount(count)}
+            </span>
+          )}
         </span>
 
         <span
@@ -156,18 +166,11 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
   const width = KEYBOARD_WIDTH_U * unit;
   const height = KEYBOARD_HEIGHT_U * unit;
 
-  const hoveredKey: KeyDef | undefined = KEYBOARD_LAYOUT.find(
-    (k) => k.id === hovered
-  );
-  const hoveredCount = hoveredKey
-    ? resolveKeyCount(hoveredKey.id, keyCounts)
-    : 0;
-
   return (
     <div className="keyboard-stage relative mx-auto w-full max-w-[1320px]">
-      <div className="keyboard-viewport relative mx-auto overflow-visible px-1 pb-10 pt-2 sm:px-4">
+      <div className="keyboard-viewport relative mx-auto overflow-x-auto overflow-y-visible px-1 pb-6 pt-2 sm:overflow-visible sm:px-4 sm:pb-10">
         <div
-          className="keyboard-scene relative mx-auto"
+          className="keyboard-scene relative mx-auto min-w-[640px] sm:min-w-0"
           style={{
             width: "100%",
             maxWidth: 1180,
@@ -209,26 +212,6 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
               />
             ))}
           </div>
-        </div>
-      </div>
-
-      <div className="pointer-events-none absolute bottom-0 left-1/2 z-30 w-[min(92%,360px)] -translate-x-1/2 text-center">
-        <div
-          className={`rounded-full px-4 py-1.5 text-sm transition-all duration-300 ${
-            hovered
-              ? "translate-y-0 bg-white/85 opacity-100 shadow-sm backdrop-blur"
-              : "translate-y-1 bg-transparent opacity-0"
-          }`}
-        >
-          {hoveredKey && (
-            <span className="font-display text-slate-600">
-              {hoveredKey.label}
-              <span className="mx-2 text-slate-300">·</span>
-              <span className="font-mono font-semibold tabular-nums text-slate-800">
-                {formatCount(hoveredCount)}
-              </span>
-            </span>
-          )}
         </div>
       </div>
     </div>

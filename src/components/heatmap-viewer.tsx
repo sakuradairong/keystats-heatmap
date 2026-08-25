@@ -90,10 +90,10 @@ export function HeatmapViewer() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
+    <div className="relative min-h-screen overflow-x-hidden">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,#f4f6f8_0%,#e8edf2_48%,#dde4eb_100%)]" />
 
-      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1360px] flex-col px-5 pb-8 pt-8 sm:px-10 sm:pt-10">
+      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1360px] flex-col px-4 pb-8 pt-5 sm:px-10 sm:pt-10">
         {status === "loading" && (
           <div className="flex flex-1 items-center justify-center py-24">
             <div className="animate-pulse text-slate-400">正在加载键盘热力图…</div>
@@ -119,8 +119,8 @@ export function HeatmapViewer() {
 
         {status === "ready" && day && (
           <>
-            <section className="relative mb-2 sm:mb-0">
-              <div className="absolute right-0 top-0 z-20 flex items-center gap-2">
+            <section className="mb-3 sm:mb-1">
+              <div className="mb-4 flex flex-wrap items-center justify-end gap-2 sm:mb-0 sm:justify-end">
                 <select
                   aria-label="选择日期"
                   className="h-8 rounded-md border border-slate-200/70 bg-white/60 px-2.5 text-sm text-slate-500 outline-none backdrop-blur transition hover:bg-white/90 focus:border-slate-300"
@@ -145,26 +145,26 @@ export function HeatmapViewer() {
                 </label>
               </div>
 
-              <div className="flex flex-col gap-8 pr-0 sm:flex-row sm:items-end sm:justify-between sm:pr-[220px]">
-                <div className="min-w-0">
-                  <div className="font-display text-[22px] leading-[1.15] tracking-tight text-[#6b7585] sm:text-[26px]">
+              <div className="flex flex-col gap-4 sm:mt-[-2.25rem] sm:flex-row sm:items-end sm:justify-between sm:pr-[210px]">
+                <div className="min-w-0 order-2 sm:order-1">
+                  <div className="font-display text-[20px] leading-[1.15] tracking-tight text-[#6b7585] sm:text-[26px]">
                     {day.date}
                   </div>
-                  <div className="font-display text-[22px] leading-[1.15] tracking-tight text-[#6b7585] sm:text-[26px]">
+                  <div className="font-display text-[20px] leading-[1.15] tracking-tight text-[#6b7585] sm:text-[26px]">
                     第 {dayOrdinal(dates, selectedDate)} 天
                   </div>
-                  <div className="mt-1 font-display text-[58px] font-semibold leading-none tracking-tight text-[#4a5565] sm:text-[76px]">
+                  <div className="mt-1 font-display text-[48px] font-semibold leading-none tracking-tight text-[#4a5565] sm:text-[76px]">
                     {formatCount(day.totalKeyPresses)}
                   </div>
                 </div>
 
-                <h1 className="max-w-[13em] font-display text-[22px] leading-snug tracking-tight text-[#6b7585] sm:pb-2 sm:text-right sm:text-[28px]">
+                <h1 className="order-1 max-w-none font-display text-[18px] leading-snug tracking-tight text-[#6b7585] sm:order-2 sm:max-w-[13em] sm:pb-2 sm:text-right sm:text-[28px]">
                   个人日常键盘使用频次数据可视化
                 </h1>
               </div>
             </section>
 
-            <div className="flex flex-1 flex-col justify-center">
+            <div className="mt-2 flex flex-1 flex-col justify-center sm:mt-0">
               <KeyboardHeatmap keyCounts={day.keyCounts} />
             </div>
           </>

@@ -74,7 +74,7 @@
 
 .keyboard-stage {
   animation: keyboard-rise 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  --kb-scale: 0.44;
+  --kb-scale: 0.52;
 }
 
 main > section {
@@ -83,7 +83,7 @@ main > section {
 
 @media (min-width: 640px) {
   .keyboard-stage {
-    --kb-scale: 0.66;
+    --kb-scale: 0.68;
   }
 }
 
