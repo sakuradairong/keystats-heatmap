@@ -172,12 +172,12 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
           }}
         >
           <div
-            className="keyboard-plate absolute left-1/2 top-[8%] origin-center"
+            className="keyboard-plate absolute left-1/2 top-[6%] origin-center sm:top-[8%]"
             style={{
               width,
               height,
               transform:
-                "translateX(-50%) rotateX(58deg) rotateZ(-28deg) scale(0.86)",
+                "translateX(-50%) rotateX(58deg) rotateZ(-28deg) scale(var(--kb-scale, 0.86))",
               transformStyle: "preserve-3d",
             }}
           >

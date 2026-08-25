@@ -63,6 +63,25 @@
 
 .keyboard-stage {
   animation: keyboard-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --kb-scale: 0.42;
+}
+
+@media (min-width: 640px) {
+  .keyboard-stage {
+    --kb-scale: 0.62;
+  }
+}
+
+@media (min-width: 900px) {
+  .keyboard-stage {
+    --kb-scale: 0.78;
+  }
+}
+
+@media (min-width: 1100px) {
+  .keyboard-stage {
+    --kb-scale: 0.86;
+  }
 }
 
 .keycap {
