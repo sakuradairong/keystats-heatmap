@@ -74,22 +74,35 @@
 
 .keyboard-stage {
   animation: keyboard-rise 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  --kb-scale: 0.52;
+  --kb-scale: 0.28;
+  --kb-tilt: 48deg;
+  --kb-aspect: 1.55 / 1;
 }
 
 main > section {
   animation: header-fade 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+@media (min-width: 480px) {
+  .keyboard-stage {
+    --kb-scale: 0.4;
+    --kb-aspect: 1.75 / 1;
+  }
+}
+
 @media (min-width: 640px) {
   .keyboard-stage {
-    --kb-scale: 0.68;
+    --kb-scale: 0.62;
+    --kb-tilt: 50deg;
+    --kb-aspect: 1.9 / 1;
   }
 }
 
 @media (min-width: 900px) {
   .keyboard-stage {
-    --kb-scale: 0.82;
+    --kb-scale: 0.78;
+    --kb-tilt: 52deg;
+    --kb-aspect: 2.05 / 1;
   }
 }
 

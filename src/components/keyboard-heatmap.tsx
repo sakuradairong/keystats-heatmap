@@ -168,23 +168,23 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
 
   return (
     <div className="keyboard-stage relative mx-auto w-full max-w-[1320px]">
-      <div className="keyboard-viewport relative mx-auto overflow-x-auto overflow-y-visible px-1 pb-6 pt-2 sm:overflow-visible sm:px-4 sm:pb-10">
+      <div className="keyboard-viewport relative mx-auto overflow-x-auto overflow-y-hidden px-1 pb-4 pt-1 sm:overflow-visible sm:px-4 sm:pb-10 sm:pt-2">
         <div
-          className="keyboard-scene relative mx-auto min-w-[640px] sm:min-w-0"
+          className="keyboard-scene relative mx-auto"
           style={{
             width: "100%",
             maxWidth: 1180,
-            aspectRatio: `${width} / ${height * 0.72}`,
+            aspectRatio: "var(--kb-aspect, 2.05 / 1)",
             perspective: "2200px",
           }}
         >
           <div
-            className="keyboard-plate absolute left-1/2 top-[4%] origin-center"
+            className="keyboard-plate absolute left-1/2 top-[2%] origin-center sm:top-[4%]"
             style={{
               width,
               height,
               transform:
-                "translateX(-50%) rotateX(52deg) rotateZ(-24deg) scale(var(--kb-scale, 0.9))",
+                "translateX(-50%) rotateX(var(--kb-tilt, 52deg)) rotateZ(-24deg) scale(var(--kb-scale, 0.9))",
               transformStyle: "preserve-3d",
             }}
           >
