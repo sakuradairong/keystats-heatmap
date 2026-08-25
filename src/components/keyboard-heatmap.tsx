@@ -37,13 +37,12 @@ function KeyCap({
   const h = keyDef.h ?? 1;
   const width = keyDef.w * unit - gap;
   const height = h * unit - gap;
-  const depth = Math.max(7, unit * 0.14);
+  const depth = Math.max(6, unit * 0.12);
   const color = heatColor(count, maxCount);
-  const side = darkenHex(color, count > 0 ? 0.22 : 0.1);
-  const front = darkenHex(color, count > 0 ? 0.14 : 0.06);
+  const side = darkenHex(color, 0.16);
+  const front = darkenHex(color, 0.1);
   const text = contrastText(color);
-  const showCount = count > 0;
-  const pad = Math.max(4, unit * 0.1);
+  const pad = Math.max(4, unit * 0.09);
 
   return (
     <button
@@ -68,64 +67,51 @@ function KeyCap({
         style={{
           transformStyle: "preserve-3d",
           transform: hovered
-            ? `translateZ(${depth + 5}px) translateY(-1px)`
+            ? `translateZ(${depth + 4}px)`
             : `translateZ(${depth}px)`,
         }}
       >
         <span
-          className="absolute inset-0 rounded-[6px]"
+          className="absolute inset-0 rounded-[5px]"
           style={{
-            background: `linear-gradient(165deg, ${color} 0%, ${darkenHex(color, 0.06)} 100%)`,
+            background: color,
             color: text,
             transform: "translateZ(0)",
             boxShadow: hovered
-              ? "0 12px 22px rgba(40, 55, 75, 0.18)"
-              : "0 3px 8px rgba(40, 55, 75, 0.1), inset 0 1px 0 rgba(255,255,255,0.45)",
+              ? "0 10px 18px rgba(40, 55, 75, 0.16)"
+              : "0 2px 5px rgba(40, 55, 75, 0.08), inset 0 1px 0 rgba(255,255,255,0.55)",
           }}
         >
           <span
-            className="absolute font-display leading-none tracking-wide"
+            className="absolute font-display leading-none"
             style={{
               left: pad,
-              top: pad * 0.85,
+              top: pad * 0.75,
               fontSize:
                 keyDef.w >= 2
-                  ? Math.max(9, unit * 0.16)
-                  : Math.max(10, unit * 0.19),
-              opacity: 0.88,
+                  ? Math.max(8, unit * 0.15)
+                  : Math.max(9, unit * 0.175),
               fontWeight: 500,
+              letterSpacing: "0.01em",
             }}
           >
             {keyDef.label}
           </span>
-          {showCount && (
-            <span
-              className="absolute font-mono tabular-nums leading-none"
-              style={{
-                right: pad,
-                bottom: pad * 0.85,
-                fontSize: Math.max(8, unit * 0.135),
-                fontWeight: 600,
-                opacity: 0.9,
-              }}
-            >
-              {formatCount(count)}
-            </span>
-          )}
-          {hovered && (
-            <span
-              className="pointer-events-none absolute left-1/2 top-0 z-30 whitespace-nowrap rounded-md bg-slate-800/90 px-2 py-1 font-mono text-[11px] font-semibold text-white shadow-lg"
-              style={{
-                transform: "translate3d(-50%, calc(-100% - 8px), 48px)",
-              }}
-            >
-              {keyDef.label} · {formatCount(count)}
-            </span>
-          )}
+          <span
+            className="absolute font-mono tabular-nums leading-none"
+            style={{
+              right: pad * 0.9,
+              bottom: pad * 0.7,
+              fontSize: Math.max(7, unit * 0.125),
+              fontWeight: 600,
+            }}
+          >
+            {formatCount(count)}
+          </span>
         </span>
 
         <span
-          className="absolute left-0 right-0 rounded-b-[6px]"
+          className="absolute left-0 right-0 rounded-b-[5px]"
           style={{
             height: depth,
             top: "100%",
@@ -136,7 +122,7 @@ function KeyCap({
         />
 
         <span
-          className="absolute top-0 bottom-0 rounded-r-[5px]"
+          className="absolute top-0 bottom-0 rounded-r-[4px]"
           style={{
             width: depth,
             left: "100%",
@@ -168,34 +154,34 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
 
   return (
     <div className="keyboard-stage relative mx-auto w-full max-w-[1320px]">
-      <div className="keyboard-viewport relative mx-auto overflow-x-auto overflow-y-hidden px-1 pb-4 pt-1 sm:overflow-visible sm:px-4 sm:pb-10 sm:pt-2">
+      <div className="keyboard-viewport relative mx-auto overflow-x-auto overflow-y-hidden px-1 pb-4 pt-1 sm:overflow-visible sm:px-4 sm:pb-12 sm:pt-2">
         <div
           className="keyboard-scene relative mx-auto"
           style={{
             width: "100%",
             maxWidth: 1180,
             aspectRatio: "var(--kb-aspect, 2.05 / 1)",
-            perspective: "2200px",
+            perspective: "1600px",
           }}
         >
           <div
-            className="keyboard-plate absolute left-1/2 top-[2%] origin-center sm:top-[4%]"
+            className="keyboard-plate absolute left-1/2 top-[6%] origin-center"
             style={{
               width,
               height,
               transform:
-                "translateX(-50%) rotateX(var(--kb-tilt, 52deg)) rotateZ(-24deg) scale(var(--kb-scale, 0.9))",
+                "translateX(-50%) rotateX(var(--kb-tilt, 60deg)) rotateZ(var(--kb-yaw, -32deg)) scale(var(--kb-scale, 0.88))",
               transformStyle: "preserve-3d",
             }}
           >
             <div
-              className="absolute -inset-[18px] rounded-[26px]"
+              className="absolute -inset-[20px] rounded-[22px]"
               style={{
                 background:
-                  "linear-gradient(160deg, #fbfcfd 0%, #eef1f4 55%, #e2e7ec 100%)",
-                transform: "translateZ(-12px)",
+                  "linear-gradient(155deg, #ffffff 0%, #f3f5f7 60%, #e8ecf0 100%)",
+                transform: "translateZ(-10px)",
                 boxShadow:
-                  "0 48px 90px rgba(55, 70, 90, 0.16), 0 18px 36px rgba(55, 70, 90, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)",
+                  "0 55px 100px rgba(60, 75, 95, 0.18), 0 20px 40px rgba(60, 75, 95, 0.08)",
               }}
             />
 

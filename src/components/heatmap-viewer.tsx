@@ -91,7 +91,7 @@ export function HeatmapViewer() {
 
   return (
     <div className="relative min-h-screen overflow-x-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,#f4f6f8_0%,#e8edf2_48%,#dde4eb_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_20%,#f2f4f6_0%,#e6eaef_55%,#dce2e8_100%)]" />
 
       <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1360px] flex-col px-4 pb-8 pt-5 sm:px-10 sm:pt-10">
         {status === "loading" && (

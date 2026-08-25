@@ -1,34 +1,49 @@
-import { interpolateRgbBasis } from "d3-interpolate";
-import { scaleSequential } from "d3-scale";
+import { interpolateRgb } from "d3-interpolate";
+import { scaleLinear } from "d3-scale";
 
-/** Bright soft blue → cream → amber → orange (reference heatmap) */
-const HEAT_COLORS = [
-  "#9ec9ef",
-  "#b5d7f3",
-  "#d2e4f2",
-  "#e8e6d4",
-  "#f3e2b0",
-  "#f5cf72",
-  "#f2b045",
-  "#ef8f2c",
-  "#ea6f1c",
-  "#e45a14",
+/**
+ * Pastel heat stops matching the Bilibili keyboard viz:
+ * soft sky blue → pale cream → peach → vivid orange.
+ * Kept deliberately light — no navy/charcoal midtones.
+ */
+const STOPS: Array<[number, string]> = [
+  [0, "#b9d6f2"],
+  [0.12, "#c5ddf4"],
+  [0.28, "#d7e5ef"],
+  [0.42, "#e6e4d4"],
+  [0.55, "#f0dfb0"],
+  [0.68, "#f3c978"],
+  [0.8, "#f0a84a"],
+  [0.9, "#eb8630"],
+  [1, "#e56a1c"],
 ];
 
-const interpolator = interpolateRgbBasis(HEAT_COLORS);
+function sampleHeat(t: number): string {
+  const x = Math.min(1, Math.max(0, t));
+  for (let i = 0; i < STOPS.length - 1; i += 1) {
+    const [aT, aC] = STOPS[i];
+    const [bT, bC] = STOPS[i + 1];
+    if (x >= aT && x <= bT) {
+      const local = (x - aT) / (bT - aT || 1);
+      return interpolateRgb(aC, bC)(local);
+    }
+  }
+  return STOPS[STOPS.length - 1][1];
+}
 
 export function createHeatScale(maxCount: number) {
   const domainMax = Math.max(1, maxCount);
-  // Slight power curve so mid-high keys warm up sooner like the reference
-  return scaleSequential((t) => interpolator(Math.pow(t, 0.85))).domain([
-    0,
-    domainMax,
-  ]);
+  // Sqrt domain spreads mid-frequency keys into warmer tones like the reference
+  return scaleLinear()
+    .domain([0, Math.sqrt(domainMax)])
+    .range([0, 1])
+    .clamp(true);
 }
 
 export function heatColor(count: number, maxCount: number): string {
-  if (count <= 0) return "#ffffff";
-  return createHeatScale(maxCount)(count);
+  if (count <= 0) return "#e8f0f8";
+  const t = createHeatScale(maxCount)(Math.sqrt(count)) as number;
+  return sampleHeat(t);
 }
 
 export function darkenHex(hex: string, amount = 0.22): string {
@@ -52,19 +67,7 @@ export function darkenHex(hex: string, amount = 0.22): string {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
-export function contrastText(bg: string): string {
-  const normalized = bg.replace("#", "");
-  const full =
-    normalized.length === 3
-      ? normalized
-          .split("")
-          .map((c) => c + c)
-          .join("")
-      : normalized;
-  const num = parseInt(full, 16);
-  const r = (num >> 16) & 255;
-  const g = (num >> 8) & 255;
-  const b = num & 255;
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.55 ? "#3a4553" : "#ffffff";
+/** Reference uses dark ink on pastel keycaps */
+export function contrastText(_bg: string): string {
+  return "#2b3340";
 }
