@@ -43,7 +43,11 @@ function KeyCap({
   const front = darkenHex(color, 0.2);
   const text = contrastText(color);
   const pad = Math.max(4, unit * 0.09);
-  const lift = hovered ? depth + 10 : depth + 2;
+  // Extrude hot keys higher so the heatmap reads in depth, not just color
+  const heatLift =
+    maxCount > 0 ? Math.sqrt(Math.max(0, count) / maxCount) * unit * 0.55 : 0;
+  const baseLift = depth + 4;
+  const lift = hovered ? baseLift + heatLift + 10 : baseLift + heatLift;
 
   return (
     <button
