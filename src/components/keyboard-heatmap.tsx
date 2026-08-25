@@ -37,12 +37,13 @@ function KeyCap({
   const h = keyDef.h ?? 1;
   const width = keyDef.w * unit - gap;
   const height = h * unit - gap;
-  const depth = Math.max(8, unit * 0.16);
+  const depth = Math.max(7, unit * 0.14);
   const color = heatColor(count, maxCount);
-  const side = darkenHex(color, 0.28);
-  const front = darkenHex(color, 0.18);
+  const side = darkenHex(color, count > 0 ? 0.22 : 0.1);
+  const front = darkenHex(color, count > 0 ? 0.14 : 0.06);
   const text = contrastText(color);
   const showCount = count > 0;
+  const pad = Math.max(4, unit * 0.1);
 
   return (
     <button
@@ -67,40 +68,45 @@ function KeyCap({
         style={{
           transformStyle: "preserve-3d",
           transform: hovered
-            ? `translateZ(${depth + 6}px) translateY(-2px)`
+            ? `translateZ(${depth + 5}px) translateY(-1px)`
             : `translateZ(${depth}px)`,
         }}
       >
-        {/* top face */}
         <span
-          className="absolute inset-0 flex flex-col items-center justify-center rounded-[7px] shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
+          className="absolute inset-0 rounded-[6px]"
           style={{
-            background: `linear-gradient(160deg, ${color} 0%, ${darkenHex(color, 0.08)} 100%)`,
+            background: `linear-gradient(165deg, ${color} 0%, ${darkenHex(color, 0.06)} 100%)`,
             color: text,
             transform: "translateZ(0)",
             boxShadow: hovered
-              ? `0 10px 24px rgba(15, 23, 42, 0.22)`
-              : `0 4px 10px rgba(15, 23, 42, 0.12)`,
+              ? "0 12px 22px rgba(40, 55, 75, 0.18)"
+              : "0 3px 8px rgba(40, 55, 75, 0.1), inset 0 1px 0 rgba(255,255,255,0.45)",
           }}
         >
           <span
-            className="font-display leading-none tracking-wide"
+            className="absolute font-display leading-none tracking-wide"
             style={{
+              left: pad,
+              top: pad * 0.85,
               fontSize:
                 keyDef.w >= 2
-                  ? Math.max(9, unit * 0.17)
-                  : Math.max(10, unit * 0.2),
-              opacity: 0.92,
+                  ? Math.max(9, unit * 0.16)
+                  : Math.max(10, unit * 0.19),
+              opacity: 0.88,
+              fontWeight: 500,
             }}
           >
             {keyDef.label}
           </span>
           {showCount && (
             <span
-              className="mt-0.5 font-mono tabular-nums leading-none"
+              className="absolute font-mono tabular-nums leading-none"
               style={{
-                fontSize: Math.max(8, unit * 0.145),
+                right: pad,
+                bottom: pad * 0.85,
+                fontSize: Math.max(8, unit * 0.135),
                 fontWeight: 600,
+                opacity: 0.9,
               }}
             >
               {formatCount(count)}
@@ -108,9 +114,8 @@ function KeyCap({
           )}
         </span>
 
-        {/* front face */}
         <span
-          className="absolute left-0 right-0 rounded-b-[7px]"
+          className="absolute left-0 right-0 rounded-b-[6px]"
           style={{
             height: depth,
             top: "100%",
@@ -120,9 +125,8 @@ function KeyCap({
           }}
         />
 
-        {/* right face */}
         <span
-          className="absolute top-0 bottom-0 rounded-r-[6px]"
+          className="absolute top-0 bottom-0 rounded-r-[5px]"
           style={{
             width: depth,
             left: "100%",
@@ -160,35 +164,35 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
     : 0;
 
   return (
-    <div className="keyboard-stage relative mx-auto w-full max-w-[1280px]">
-      <div className="keyboard-viewport relative mx-auto overflow-visible px-2 pb-16 pt-8 sm:px-6">
+    <div className="keyboard-stage relative mx-auto w-full max-w-[1320px]">
+      <div className="keyboard-viewport relative mx-auto overflow-visible px-1 pb-10 pt-2 sm:px-4">
         <div
           className="keyboard-scene relative mx-auto"
           style={{
             width: "100%",
-            maxWidth: 1100,
-            aspectRatio: `${width} / ${height * 0.78}`,
-            perspective: "1800px",
+            maxWidth: 1180,
+            aspectRatio: `${width} / ${height * 0.72}`,
+            perspective: "2200px",
           }}
         >
           <div
-            className="keyboard-plate absolute left-1/2 top-[6%] origin-center sm:top-[8%]"
+            className="keyboard-plate absolute left-1/2 top-[4%] origin-center"
             style={{
               width,
               height,
               transform:
-                "translateX(-50%) rotateX(58deg) rotateZ(-28deg) scale(var(--kb-scale, 0.86))",
+                "translateX(-50%) rotateX(52deg) rotateZ(-24deg) scale(var(--kb-scale, 0.9))",
               transformStyle: "preserve-3d",
             }}
           >
             <div
-              className="absolute -inset-4 rounded-[28px]"
+              className="absolute -inset-[18px] rounded-[26px]"
               style={{
                 background:
-                  "linear-gradient(145deg, #f4f6f8 0%, #e6ebf0 45%, #d5dde6 100%)",
-                transform: "translateZ(-14px)",
+                  "linear-gradient(160deg, #fbfcfd 0%, #eef1f4 55%, #e2e7ec 100%)",
+                transform: "translateZ(-12px)",
                 boxShadow:
-                  "0 40px 80px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255,255,255,0.7)",
+                  "0 48px 90px rgba(55, 70, 90, 0.16), 0 18px 36px rgba(55, 70, 90, 0.08), inset 0 1px 0 rgba(255,255,255,0.9)",
               }}
             />
 
@@ -208,22 +212,21 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
         </div>
       </div>
 
-      <div className="pointer-events-none absolute bottom-2 left-1/2 z-30 w-[min(92%,420px)] -translate-x-1/2 text-center">
+      <div className="pointer-events-none absolute bottom-0 left-1/2 z-30 w-[min(92%,360px)] -translate-x-1/2 text-center">
         <div
-          className={`rounded-full px-4 py-2 text-sm shadow-sm backdrop-blur transition-all duration-300 ${
+          className={`rounded-full px-4 py-1.5 text-sm transition-all duration-300 ${
             hovered
-              ? "translate-y-0 bg-white/90 opacity-100"
+              ? "translate-y-0 bg-white/85 opacity-100 shadow-sm backdrop-blur"
               : "translate-y-1 bg-transparent opacity-0"
           }`}
         >
           {hoveredKey && (
-            <span className="font-display text-slate-700">
+            <span className="font-display text-slate-600">
               {hoveredKey.label}
               <span className="mx-2 text-slate-300">·</span>
-              <span className="font-mono font-semibold tabular-nums text-slate-900">
+              <span className="font-mono font-semibold tabular-nums text-slate-800">
                 {formatCount(hoveredCount)}
               </span>
-              <span className="ml-1 text-slate-500">次</span>
             </span>
           )}
         </div>

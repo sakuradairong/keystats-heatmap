@@ -1,17 +1,20 @@
 import { interpolateRgbBasis } from "d3-interpolate";
 import { scaleSequential } from "d3-scale";
 
-/** Cool blue → warm yellow → hot orange, matching the reference heatmap */
+/**
+ * Soft blue → peach → warm orange, matching the Bilibili keyboard heatmap look.
+ * Unused keys stay near-white outside this scale.
+ */
 const HEAT_COLORS = [
-  "#7eb6e8",
-  "#8ec8ef",
-  "#a8d8c0",
-  "#d4e87a",
-  "#f0d84a",
-  "#f5b83d",
-  "#f08a2e",
-  "#e85d1f",
-  "#d94816",
+  "#b7d4ef",
+  "#c9dff2",
+  "#dce8f0",
+  "#ebe4c8",
+  "#f3d9a0",
+  "#f2c06a",
+  "#ef9f3d",
+  "#ea7d28",
+  "#e2641d",
 ];
 
 const interpolator = interpolateRgbBasis(HEAT_COLORS);
@@ -22,7 +25,7 @@ export function createHeatScale(maxCount: number) {
 }
 
 export function heatColor(count: number, maxCount: number): string {
-  if (count <= 0) return "#c9d7e8";
+  if (count <= 0) return "#f7f8fa";
   return createHeatScale(maxCount)(count);
 }
 
@@ -61,5 +64,5 @@ export function contrastText(bg: string): string {
   const g = (num >> 8) & 255;
   const b = num & 255;
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.62 ? "#1a2332" : "#f7fafc";
+  return luminance > 0.58 ? "#2a3340" : "#f8fafc";
 }

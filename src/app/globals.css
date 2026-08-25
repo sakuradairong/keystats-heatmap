@@ -8,13 +8,13 @@
     --font-sans: var(--font-sans);
   }
   :root {
-    --background: #e4ebf2;
-    --foreground: #152033;
+    --background: #e8edf2;
+    --foreground: #2a3340;
     --card: oklch(1 0 0);
     --card-foreground: oklch(0.145 0 0);
     --popover: oklch(1 0 0);
     --popover-foreground: oklch(0.145 0 0);
-    --primary: #1f2a3d;
+    --primary: #2a3340;
     --primary-foreground: #f8fafc;
     --secondary: oklch(0.97 0 0);
     --secondary-foreground: oklch(0.205 0 0);
@@ -53,34 +53,49 @@
 @keyframes keyboard-rise {
   from {
     opacity: 0;
-    transform: translateY(28px) scale(0.98);
+    transform: translateY(24px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
+  }
+}
+
+@keyframes header-fade {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 .keyboard-stage {
-  animation: keyboard-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  --kb-scale: 0.42;
+  animation: keyboard-rise 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --kb-scale: 0.44;
+}
+
+main > section {
+  animation: header-fade 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @media (min-width: 640px) {
   .keyboard-stage {
-    --kb-scale: 0.62;
+    --kb-scale: 0.66;
   }
 }
 
 @media (min-width: 900px) {
   .keyboard-stage {
-    --kb-scale: 0.78;
+    --kb-scale: 0.82;
   }
 }
 
 @media (min-width: 1100px) {
   .keyboard-stage {
-    --kb-scale: 0.86;
+    --kb-scale: 0.9;
   }
 }
 
@@ -90,5 +105,5 @@
 
 .keycap:hover,
 .keycap:focus-visible {
-  filter: brightness(1.05);
+  filter: brightness(1.04);
 }
