@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  .theme {
+    --font-heading: var(--font-display);
+    --font-sans: var(--font-sans);
+  }
+  :root {
+    --background: #e4ebf2;
+    --foreground: #152033;
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: #1f2a3d;
+    --primary-foreground: #f8fafc;
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --radius: 0.625rem;
+  }
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans), "Noto Sans SC", sans-serif;
+  }
+  html {
+    font-family: var(--font-sans), "Noto Sans SC", sans-serif;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: var(--font-display), var(--font-sans), sans-serif;
+  }
+  .font-mono {
+    font-family: var(--font-mono), ui-monospace, monospace;
+  }
+}
+
+@keyframes keyboard-rise {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.keyboard-stage {
+  animation: keyboard-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.keycap {
+  transition: filter 180ms ease;
+}
+
+.keycap:hover,
+.keycap:focus-visible {
+  filter: brightness(1.05);
+}
