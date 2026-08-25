@@ -74,11 +74,11 @@
 
 .keyboard-stage {
   animation: keyboard-rise 800ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  --kb-scale: 0.32;
-  --kb-tilt: 64deg;
-  --kb-yaw: -34deg;
-  --kb-aspect: 1.45 / 1;
-  --kb-perspective: 900px;
+  --kb-scale: 0.48;
+  --kb-tilt: 62deg;
+  --kb-yaw: -35deg;
+  --kb-aspect: 1.55 / 1;
+  --kb-perspective: 1000px;
 }
 
 main > section {
@@ -87,17 +87,17 @@ main > section {
 
 @media (min-width: 480px) {
   .keyboard-stage {
-    --kb-scale: 0.44;
-    --kb-aspect: 1.55 / 1;
-    --kb-perspective: 1000px;
+    --kb-scale: 0.55;
+    --kb-aspect: 1.6 / 1;
+    --kb-perspective: 1050px;
   }
 }
 
 @media (min-width: 640px) {
   .keyboard-stage {
-    --kb-scale: 0.6;
-    --kb-tilt: 63deg;
-    --kb-yaw: -36deg;
+    --kb-scale: 0.64;
+    --kb-tilt: 62deg;
+    --kb-yaw: -35deg;
     --kb-aspect: 1.7 / 1;
     --kb-perspective: 1100px;
   }
@@ -106,22 +106,33 @@ main > section {
 @media (min-width: 900px) {
   .keyboard-stage {
     --kb-scale: 0.74;
-    --kb-aspect: 1.8 / 1;
-    --kb-perspective: 1200px;
+    --kb-aspect: 1.78 / 1;
+    --kb-perspective: 1100px;
   }
 }
 
 @media (min-width: 1100px) {
   .keyboard-stage {
-    --kb-scale: 0.86;
+    --kb-scale: 0.84;
+    --kb-tilt: 62deg;
+    --kb-yaw: -35deg;
+    --kb-aspect: 1.85 / 1;
+    --kb-perspective: 1100px;
   }
 }
 
-.keycap {
-  transition: filter 180ms ease;
+.keyboard-scroll {
+  padding-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .keyboard-scroll {
+    padding-bottom: 3rem;
+    padding-top: 0.5rem;
+  }
 }
 
 .keycap:hover,
 .keycap:focus-visible {
-  filter: brightness(1.04);
+  filter: brightness(1.03);
 }

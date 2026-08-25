@@ -1,10 +1,7 @@
 import { interpolateRgb } from "d3-interpolate";
-import { scaleLinear } from "d3-scale";
 
 /**
- * Pastel heat stops matching the Bilibili keyboard viz:
- * soft sky blue → pale cream → peach → vivid orange.
- * Kept deliberately light — no navy/charcoal midtones.
+ * Pastel heat stops: soft sky blue → pale cream → peach → orange.
  */
 const STOPS: Array<[number, string]> = [
   [0, "#b9d6f2"],
@@ -25,49 +22,68 @@ function sampleHeat(t: number): string {
     const [bT, bC] = STOPS[i + 1];
     if (x >= aT && x <= bT) {
       const local = (x - aT) / (bT - aT || 1);
-      return interpolateRgb(aC, bC)(local);
+      return rgbToHex(interpolateRgb(aC, bC)(local));
     }
   }
   return STOPS[STOPS.length - 1][1];
 }
 
-export function createHeatScale(maxCount: number) {
-  const domainMax = Math.max(1, maxCount);
-  // Sqrt domain spreads mid-frequency keys into warmer tones like the reference
-  return scaleLinear()
-    .domain([0, Math.sqrt(domainMax)])
-    .range([0, 1])
-    .clamp(true);
-}
+function parseColor(input: string): { r: number; g: number; b: number } {
+  const value = (input || "").trim();
+  const rgbMatch = value.match(
+    /^rgba?\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)/i
+  );
+  if (rgbMatch) {
+    return {
+      r: Number(rgbMatch[1]),
+      g: Number(rgbMatch[2]),
+      b: Number(rgbMatch[3]),
+    };
+  }
 
-export function heatColor(count: number, maxCount: number): string {
-  if (count <= 0) return "#e8f0f8";
-  const t = createHeatScale(maxCount)(Math.sqrt(count)) as number;
-  return sampleHeat(t);
-}
-
-export function darkenHex(hex: string, amount = 0.22): string {
-  const normalized = hex.replace("#", "");
+  const normalized = value.replace("#", "");
   const full =
     normalized.length === 3
       ? normalized
           .split("")
           .map((c) => c + c)
           .join("")
-      : normalized;
-  const num = parseInt(full, 16);
-  const r = (num >> 16) & 255;
-  const g = (num >> 8) & 255;
-  const b = num & 255;
-  const factor = 1 - amount;
+      : normalized.padStart(6, "0").slice(0, 6);
+  const num = Number.parseInt(full, 16);
+  if (Number.isNaN(num)) {
+    return { r: 200, g: 210, b: 220 };
+  }
+  return {
+    r: (num >> 16) & 255,
+    g: (num >> 8) & 255,
+    b: num & 255,
+  };
+}
+
+function rgbToHex(input: string | { r: number; g: number; b: number }): string {
+  const { r, g, b } =
+    typeof input === "string" ? parseColor(input) : input;
   const toHex = (v: number) =>
-    Math.max(0, Math.min(255, Math.round(v * factor)))
+    Math.max(0, Math.min(255, Math.round(v)))
       .toString(16)
       .padStart(2, "0");
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
+export function heatColor(count: number, maxCount: number): string {
+  if (count <= 0) return "#e4eef6";
+  const domainMax = Math.max(1, maxCount);
+  const t = Math.sqrt(count / domainMax);
+  return sampleHeat(t);
+}
+
+export function darkenHex(color: string, amount = 0.22): string {
+  const { r, g, b } = parseColor(color);
+  const factor = 1 - amount;
+  return rgbToHex({ r: r * factor, g: g * factor, b: b * factor });
+}
+
 /** Reference uses dark ink on pastel keycaps */
-export function contrastText(_bg: string): string {
+export function contrastText(): string {
   return "#2b3340";
 }

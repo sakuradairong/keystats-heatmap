@@ -119,34 +119,9 @@ export function HeatmapViewer() {
 
         {status === "ready" && day && (
           <>
-            <section className="mb-3 sm:mb-1">
-              <div className="mb-4 flex flex-wrap items-center justify-end gap-2 sm:mb-0 sm:justify-end">
-                <select
-                  aria-label="选择日期"
-                  className="h-8 rounded-md border border-slate-200/70 bg-white/60 px-2.5 text-sm text-slate-500 outline-none backdrop-blur transition hover:bg-white/90 focus:border-slate-300"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                >
-                  {dates.map((date) => (
-                    <option key={date} value={date}>
-                      {date}
-                    </option>
-                  ))}
-                </select>
-                <label className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-slate-200/70 bg-white/60 px-2.5 text-sm text-slate-500 backdrop-blur transition hover:bg-white/90">
-                  <input
-                    type="file"
-                    accept="application/json,.json"
-                    className="sr-only"
-                    onChange={(e) => onFile(e.target.files?.[0] ?? null)}
-                  />
-                  <Upload className="size-3.5" />
-                  导入
-                </label>
-              </div>
-
-              <div className="flex flex-col gap-4 sm:mt-[-2.25rem] sm:flex-row sm:items-end sm:justify-between sm:pr-[210px]">
-                <div className="min-w-0 order-2 sm:order-1">
+            <section className="mb-3 sm:mb-2">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                <div className="order-2 min-w-0 lg:order-1">
                   <div className="font-display text-[20px] leading-[1.15] tracking-tight text-[#6b7585] sm:text-[26px]">
                     {day.date}
                   </div>
@@ -158,13 +133,39 @@ export function HeatmapViewer() {
                   </div>
                 </div>
 
-                <h1 className="order-1 max-w-none font-display text-[18px] leading-snug tracking-tight text-[#6b7585] sm:order-2 sm:max-w-[13em] sm:pb-2 sm:text-right sm:text-[28px]">
-                  个人日常键盘使用频次数据可视化
-                </h1>
+                <div className="order-1 flex flex-col gap-3 lg:order-2 lg:items-end">
+                  <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                    <select
+                      aria-label="选择日期"
+                      className="h-8 rounded-md border border-slate-200/70 bg-white/60 px-2.5 text-sm text-slate-500 outline-none backdrop-blur transition hover:bg-white/90 focus:border-slate-300"
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
+                    >
+                      {dates.map((date) => (
+                        <option key={date} value={date}>
+                          {date}
+                        </option>
+                      ))}
+                    </select>
+                    <label className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-slate-200/70 bg-white/60 px-2.5 text-sm text-slate-500 backdrop-blur transition hover:bg-white/90">
+                      <input
+                        type="file"
+                        accept="application/json,.json"
+                        className="sr-only"
+                        onChange={(e) => onFile(e.target.files?.[0] ?? null)}
+                      />
+                      <Upload className="size-3.5" />
+                      导入
+                    </label>
+                  </div>
+                  <h1 className="max-w-[14em] font-display text-[18px] leading-snug tracking-tight text-[#6b7585] lg:text-right lg:text-[28px]">
+                    个人日常键盘使用频次数据可视化
+                  </h1>
+                </div>
               </div>
             </section>
 
-            <div className="mt-2 flex flex-1 flex-col justify-center sm:mt-0">
+            <div className="mt-1 flex flex-1 flex-col justify-center sm:mt-0">
               <KeyboardHeatmap keyCounts={day.keyCounts} />
             </div>
           </>

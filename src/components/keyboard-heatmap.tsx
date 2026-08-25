@@ -8,7 +8,6 @@ import {
   KEYBOARD_WIDTH_U,
   KEY_GAP,
   resolveKeyCount,
-  type KeyDef,
 } from "@/lib/keyboard-layout";
 import { contrastText, darkenHex, heatColor } from "@/lib/heatmap-color";
 import { formatCount } from "@/lib/keystats";
@@ -26,7 +25,7 @@ function KeyCap({
   hovered,
   onHover,
 }: {
-  keyDef: KeyDef;
+  keyDef: (typeof KEYBOARD_LAYOUT)[number];
   count: number;
   maxCount: number;
   unit: number;
@@ -37,17 +36,30 @@ function KeyCap({
   const h = keyDef.h ?? 1;
   const width = keyDef.w * unit - gap;
   const height = h * unit - gap;
-  const depth = Math.max(14, unit * 0.26);
+  const depth = Math.max(16, unit * 0.3);
   const color = heatColor(count, maxCount);
-  const side = darkenHex(color, 0.32);
-  const front = darkenHex(color, 0.2);
-  const text = contrastText(color);
+  const frontColor = darkenHex(color, 0.2);
+  const sideColor = darkenHex(color, 0.32);
+  const text = contrastText();
   const pad = Math.max(4, unit * 0.09);
-  // Extrude hot keys higher so the heatmap reads in depth, not just color
-  const heatLift =
-    maxCount > 0 ? Math.sqrt(Math.max(0, count) / maxCount) * unit * 0.55 : 0;
-  const baseLift = depth + 4;
-  const lift = hovered ? baseLift + heatLift + 10 : baseLift + heatLift;
+
+  const normalized =
+    maxCount > 0 ? Math.sqrt(Math.max(0, count) / maxCount) : 0;
+  const heatLift = normalized * unit * 0.7;
+  const baseLift = depth + 6;
+  const lift = baseLift + heatLift;
+  const finalLift = hovered ? lift + 8 : lift;
+
+  const labelSize =
+    keyDef.w >= 4
+      ? Math.max(9, unit * 0.16)
+      : keyDef.w >= 2
+        ? Math.max(8, unit * 0.15)
+        : Math.max(9, unit * 0.175);
+  const countSize =
+    keyDef.w >= 4
+      ? Math.max(8, unit * 0.14)
+      : Math.max(7, unit * 0.125);
 
   return (
     <button
@@ -59,7 +71,9 @@ function KeyCap({
         width,
         height,
         transformStyle: "preserve-3d",
-        zIndex: hovered ? 30 : Math.round(keyDef.y * 10 + keyDef.x),
+        zIndex: hovered
+          ? 80
+          : Math.round(keyDef.y * 40 + keyDef.x + heatLift * 2),
       }}
       onMouseEnter={() => onHover(keyDef.id)}
       onMouseLeave={() => onHover(null)}
@@ -67,33 +81,33 @@ function KeyCap({
       onBlur={() => onHover(null)}
       aria-label={`${keyDef.label}: ${count}`}
     >
-      {/* contact shadow on plate */}
       <span
-        className="absolute inset-0 rounded-[6px]"
+        className="pointer-events-none absolute inset-[2px] rounded-[5px]"
         style={{
-          background: "rgba(40, 55, 75, 0.22)",
-          transform: "translateZ(1px) translateY(2px)",
-          filter: "blur(3px)",
+          background: "rgba(40, 55, 75, 0.2)",
+          transform: "translateZ(1px) translateY(3px)",
+          filter: "blur(2.5px)",
         }}
       />
 
       <span
-        className="keycap-solid absolute inset-0 transition-transform duration-200"
+        className="keycap-solid pointer-events-none absolute inset-0"
         style={{
           transformStyle: "preserve-3d",
-          transform: `translateZ(${lift}px)`,
+          transform: `translateZ(${finalLift}px)`,
+          transition: "transform 200ms ease, filter 200ms ease",
         }}
       >
-        {/* top face */}
         <span
-          className="absolute inset-0 rounded-[6px]"
+          className="absolute inset-0 overflow-hidden rounded-[6px]"
           style={{
+            pointerEvents: "auto",
             background: `linear-gradient(155deg, ${color} 0%, ${darkenHex(color, 0.08)} 100%)`,
             color: text,
             transform: "translateZ(0)",
             boxShadow: hovered
-              ? "0 18px 28px rgba(30, 45, 65, 0.28)"
-              : "0 6px 14px rgba(30, 45, 65, 0.14), inset 0 1px 0 rgba(255,255,255,0.5)",
+              ? "0 16px 26px rgba(40, 55, 75, 0.22), inset 0 1px 0 rgba(255,255,255,0.5)"
+              : "0 5px 12px rgba(40, 55, 75, 0.12), inset 0 1px 0 rgba(255,255,255,0.5)",
           }}
         >
           <span
@@ -101,12 +115,13 @@ function KeyCap({
             style={{
               left: pad,
               top: pad * 0.75,
-              fontSize:
-                keyDef.w >= 2
-                  ? Math.max(8, unit * 0.15)
-                  : Math.max(9, unit * 0.175),
+              fontSize: labelSize,
               fontWeight: 500,
               letterSpacing: "0.01em",
+              maxWidth: "calc(100% - 8px)",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
             {keyDef.label}
@@ -114,41 +129,53 @@ function KeyCap({
           <span
             className="absolute font-mono tabular-nums leading-none"
             style={{
-              right: pad * 0.9,
-              bottom: pad * 0.7,
-              fontSize: Math.max(7, unit * 0.125),
+              right: pad * 0.85,
+              bottom: pad * 0.65,
+              fontSize: countSize,
               fontWeight: 600,
+              maxWidth: "90%",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
             {formatCount(count)}
           </span>
+
+          {hovered && (
+            <span
+              className="pointer-events-none absolute left-1/2 top-0 z-30 whitespace-nowrap rounded-md bg-slate-800/92 px-2 py-1 font-mono text-[11px] font-semibold text-white shadow-lg"
+              style={{
+                transform: "translate3d(-50%, calc(-100% - 10px), 56px)",
+              }}
+            >
+              {keyDef.label} · {formatCount(count)}
+            </span>
+          )}
         </span>
 
-        {/* front face */}
         <span
           className="absolute left-0 right-0 rounded-b-[6px]"
           style={{
             height: depth,
             top: "100%",
-            background: `linear-gradient(180deg, ${front} 0%, ${darkenHex(color, 0.28)} 100%)`,
+            background: `linear-gradient(180deg, ${frontColor} 0%, ${darkenHex(color, 0.28)} 100%)`,
             transformOrigin: "top",
             transform: "rotateX(-90deg)",
           }}
         />
 
-        {/* right face */}
         <span
           className="absolute top-0 bottom-0 rounded-r-[5px]"
           style={{
             width: depth,
             left: "100%",
-            background: `linear-gradient(90deg, ${side} 0%, ${darkenHex(color, 0.4)} 100%)`,
+            background: `linear-gradient(90deg, ${sideColor} 0%, ${darkenHex(color, 0.4)} 100%)`,
             transformOrigin: "left",
             transform: "rotateY(90deg)",
           }}
         />
 
-        {/* left face (visible with strong yaw) */}
         <span
           className="absolute top-0 bottom-0 rounded-l-[5px]"
           style={{
@@ -179,63 +206,60 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
   const gap = KEY_GAP;
   const width = KEYBOARD_WIDTH_U * unit;
   const height = KEYBOARD_HEIGHT_U * unit;
-  const chassisDepth = 28;
+  const chassisDepth = 32;
 
   return (
     <div className="keyboard-stage relative mx-auto w-full max-w-[1320px]">
-      <div className="keyboard-viewport relative mx-auto overflow-x-auto overflow-y-hidden px-1 pb-6 pt-2 sm:overflow-visible sm:px-4 sm:pb-16 sm:pt-4">
+      <div className="keyboard-scroll mx-auto w-full overflow-x-auto overflow-y-visible sm:overflow-visible">
         <div
           className="keyboard-scene relative mx-auto"
           style={{
-            width: "100%",
+            width: "max(100%, 720px)",
             maxWidth: 1180,
-            aspectRatio: "var(--kb-aspect, 1.85 / 1)",
+            aspectRatio: "var(--kb-aspect, 1.8 / 1)",
             perspective: "var(--kb-perspective, 1100px)",
             perspectiveOrigin: "50% 35%",
           }}
         >
           <div
-            className="keyboard-plate absolute left-1/2 top-[8%] origin-center"
+            className="keyboard-plate absolute left-1/2 top-[10%] origin-center"
             style={{
               width,
               height,
               transform:
-                "translateX(-50%) rotateX(var(--kb-tilt, 62deg)) rotateZ(var(--kb-yaw, -36deg)) scale(var(--kb-scale, 0.86))",
+                "translateX(-50%) rotateX(var(--kb-tilt, 62deg)) rotateZ(var(--kb-yaw, -35deg)) scale(var(--kb-scale, 0.84))",
               transformStyle: "preserve-3d",
             }}
           >
-            {/* chassis body */}
             <div
-              className="absolute -inset-[22px] rounded-[24px]"
+              className="absolute -inset-[24px] rounded-[24px]"
               style={{
                 background:
                   "linear-gradient(155deg, #ffffff 0%, #f4f6f8 45%, #e4e9ee 100%)",
                 transform: `translateZ(-${chassisDepth}px)`,
                 boxShadow:
-                  "0 70px 120px rgba(40, 55, 75, 0.28), 0 28px 48px rgba(40, 55, 75, 0.14)",
+                  "0 70px 120px rgba(40, 55, 75, 0.24), 0 28px 48px rgba(40, 55, 75, 0.14)",
                 transformStyle: "preserve-3d",
               }}
             >
-              {/* chassis front edge */}
               <div
                 className="absolute left-0 right-0 rounded-b-[24px]"
                 style={{
                   height: chassisDepth,
                   top: "100%",
                   background:
-                    "linear-gradient(180deg, #d8dee6 0%, #c5ced8 100%)",
+                    "linear-gradient(180deg, #d5dce6 0%, #b9c3ce 100%)",
                   transformOrigin: "top",
                   transform: "rotateX(-90deg)",
                 }}
               />
-              {/* chassis right edge */}
               <div
                 className="absolute top-0 bottom-0 rounded-r-[20px]"
                 style={{
                   width: chassisDepth,
                   left: "100%",
                   background:
-                    "linear-gradient(90deg, #cfd6de 0%, #b8c2cd 100%)",
+                    "linear-gradient(90deg, #c8d1db 0%, #aeb8c4 100%)",
                   transformOrigin: "left",
                   transform: "rotateY(90deg)",
                 }}
