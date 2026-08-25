@@ -37,12 +37,13 @@ function KeyCap({
   const h = keyDef.h ?? 1;
   const width = keyDef.w * unit - gap;
   const height = h * unit - gap;
-  const depth = Math.max(6, unit * 0.12);
+  const depth = Math.max(14, unit * 0.26);
   const color = heatColor(count, maxCount);
-  const side = darkenHex(color, 0.16);
-  const front = darkenHex(color, 0.1);
+  const side = darkenHex(color, 0.32);
+  const front = darkenHex(color, 0.2);
   const text = contrastText(color);
   const pad = Math.max(4, unit * 0.09);
+  const lift = hovered ? depth + 10 : depth + 2;
 
   return (
     <button
@@ -54,7 +55,7 @@ function KeyCap({
         width,
         height,
         transformStyle: "preserve-3d",
-        zIndex: hovered ? 20 : Math.round(keyDef.y * 10),
+        zIndex: hovered ? 30 : Math.round(keyDef.y * 10 + keyDef.x),
       }}
       onMouseEnter={() => onHover(keyDef.id)}
       onMouseLeave={() => onHover(null)}
@@ -62,24 +63,33 @@ function KeyCap({
       onBlur={() => onHover(null)}
       aria-label={`${keyDef.label}: ${count}`}
     >
+      {/* contact shadow on plate */}
+      <span
+        className="absolute inset-0 rounded-[6px]"
+        style={{
+          background: "rgba(40, 55, 75, 0.22)",
+          transform: "translateZ(1px) translateY(2px)",
+          filter: "blur(3px)",
+        }}
+      />
+
       <span
         className="keycap-solid absolute inset-0 transition-transform duration-200"
         style={{
           transformStyle: "preserve-3d",
-          transform: hovered
-            ? `translateZ(${depth + 4}px)`
-            : `translateZ(${depth}px)`,
+          transform: `translateZ(${lift}px)`,
         }}
       >
+        {/* top face */}
         <span
-          className="absolute inset-0 rounded-[5px]"
+          className="absolute inset-0 rounded-[6px]"
           style={{
-            background: color,
+            background: `linear-gradient(155deg, ${color} 0%, ${darkenHex(color, 0.08)} 100%)`,
             color: text,
             transform: "translateZ(0)",
             boxShadow: hovered
-              ? "0 10px 18px rgba(40, 55, 75, 0.16)"
-              : "0 2px 5px rgba(40, 55, 75, 0.08), inset 0 1px 0 rgba(255,255,255,0.55)",
+              ? "0 18px 28px rgba(30, 45, 65, 0.28)"
+              : "0 6px 14px rgba(30, 45, 65, 0.14), inset 0 1px 0 rgba(255,255,255,0.5)",
           }}
         >
           <span
@@ -110,25 +120,39 @@ function KeyCap({
           </span>
         </span>
 
+        {/* front face */}
         <span
-          className="absolute left-0 right-0 rounded-b-[5px]"
+          className="absolute left-0 right-0 rounded-b-[6px]"
           style={{
             height: depth,
             top: "100%",
-            background: front,
+            background: `linear-gradient(180deg, ${front} 0%, ${darkenHex(color, 0.28)} 100%)`,
             transformOrigin: "top",
             transform: "rotateX(-90deg)",
           }}
         />
 
+        {/* right face */}
         <span
-          className="absolute top-0 bottom-0 rounded-r-[4px]"
+          className="absolute top-0 bottom-0 rounded-r-[5px]"
           style={{
             width: depth,
             left: "100%",
-            background: side,
+            background: `linear-gradient(90deg, ${side} 0%, ${darkenHex(color, 0.4)} 100%)`,
             transformOrigin: "left",
             transform: "rotateY(90deg)",
+          }}
+        />
+
+        {/* left face (visible with strong yaw) */}
+        <span
+          className="absolute top-0 bottom-0 rounded-l-[5px]"
+          style={{
+            width: depth,
+            right: "100%",
+            background: darkenHex(color, 0.12),
+            transformOrigin: "right",
+            transform: "rotateY(-90deg)",
           }}
         />
       </span>
@@ -151,39 +175,68 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
   const gap = KEY_GAP;
   const width = KEYBOARD_WIDTH_U * unit;
   const height = KEYBOARD_HEIGHT_U * unit;
+  const chassisDepth = 28;
 
   return (
     <div className="keyboard-stage relative mx-auto w-full max-w-[1320px]">
-      <div className="keyboard-viewport relative mx-auto overflow-x-auto overflow-y-hidden px-1 pb-4 pt-1 sm:overflow-visible sm:px-4 sm:pb-12 sm:pt-2">
+      <div className="keyboard-viewport relative mx-auto overflow-x-auto overflow-y-hidden px-1 pb-6 pt-2 sm:overflow-visible sm:px-4 sm:pb-16 sm:pt-4">
         <div
           className="keyboard-scene relative mx-auto"
           style={{
             width: "100%",
             maxWidth: 1180,
-            aspectRatio: "var(--kb-aspect, 2.05 / 1)",
-            perspective: "1600px",
+            aspectRatio: "var(--kb-aspect, 1.85 / 1)",
+            perspective: "var(--kb-perspective, 1100px)",
+            perspectiveOrigin: "50% 35%",
           }}
         >
           <div
-            className="keyboard-plate absolute left-1/2 top-[6%] origin-center"
+            className="keyboard-plate absolute left-1/2 top-[8%] origin-center"
             style={{
               width,
               height,
               transform:
-                "translateX(-50%) rotateX(var(--kb-tilt, 60deg)) rotateZ(var(--kb-yaw, -32deg)) scale(var(--kb-scale, 0.88))",
+                "translateX(-50%) rotateX(var(--kb-tilt, 62deg)) rotateZ(var(--kb-yaw, -36deg)) scale(var(--kb-scale, 0.86))",
               transformStyle: "preserve-3d",
             }}
           >
+            {/* chassis body */}
             <div
-              className="absolute -inset-[20px] rounded-[22px]"
+              className="absolute -inset-[22px] rounded-[24px]"
               style={{
                 background:
-                  "linear-gradient(155deg, #ffffff 0%, #f3f5f7 60%, #e8ecf0 100%)",
-                transform: "translateZ(-10px)",
+                  "linear-gradient(155deg, #ffffff 0%, #f4f6f8 45%, #e4e9ee 100%)",
+                transform: `translateZ(-${chassisDepth}px)`,
                 boxShadow:
-                  "0 55px 100px rgba(60, 75, 95, 0.18), 0 20px 40px rgba(60, 75, 95, 0.08)",
+                  "0 70px 120px rgba(40, 55, 75, 0.28), 0 28px 48px rgba(40, 55, 75, 0.14)",
+                transformStyle: "preserve-3d",
               }}
-            />
+            >
+              {/* chassis front edge */}
+              <div
+                className="absolute left-0 right-0 rounded-b-[24px]"
+                style={{
+                  height: chassisDepth,
+                  top: "100%",
+                  background:
+                    "linear-gradient(180deg, #d8dee6 0%, #c5ced8 100%)",
+                  transformOrigin: "top",
+                  transform: "rotateX(-90deg)",
+                }}
+              />
+              {/* chassis right edge */}
+              <div
+                className="absolute top-0 bottom-0 rounded-r-[20px]"
+                style={{
+                  width: chassisDepth,
+                  left: "100%",
+                  background:
+                    "linear-gradient(90deg, #cfd6de 0%, #b8c2cd 100%)",
+                  transformOrigin: "left",
+                  transform: "rotateY(90deg)",
+                }}
+              />
+            </div>
 
             {KEYBOARD_LAYOUT.map((keyDef) => (
               <KeyCap
