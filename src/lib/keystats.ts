@@ -306,6 +306,22 @@ export function listAvailableDates(payload: KeyStatsExport): string[] {
   return Object.keys(payload.history).sort();
 }
 
+export function preferActiveDate(payload: KeyStatsExport): string {
+  const dates = listAvailableDates(payload);
+  if (dates.length === 0) return "";
+
+  for (let i = dates.length - 1; i >= 0; i -= 1) {
+    const daily = payload.history[dates[i]];
+    const presses = daily?.keyPresses ?? 0;
+    const hasCounts = Object.keys(daily?.keyPressCounts ?? {}).length > 0;
+    if (presses > 0 || hasCounts) return dates[i];
+  }
+
+  const currentKey = toDateKey(payload.currentStats?.date);
+  if (currentKey && dates.includes(currentKey)) return currentKey;
+  return dates[dates.length - 1];
+}
+
 export function getDayFromExport(
   payload: KeyStatsExport,
   date: string
@@ -316,8 +332,8 @@ export function getDayFromExport(
   const summed = Object.values(keyCounts).reduce((a, b) => a + b, 0);
 
   return {
-    date: daily.date || date,
-    totalKeyPresses: Math.max(daily.keyPresses || 0, summed),
+    date: toDateKey(daily.date) || date,
+    totalKeyPresses: Math.max(0, daily.keyPresses || 0) || summed,
     keyCounts,
     rawCounts,
   };

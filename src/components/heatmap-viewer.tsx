@@ -9,6 +9,7 @@ import {
   getDayFromExport,
   listAvailableDates,
   parseKeyStatsExport,
+  preferActiveDate,
   topKeys,
   type KeyStatsExport,
   type ParsedDay,
@@ -22,8 +23,13 @@ function displayKeyName(key: string): string {
     Space: "空格",
     Backspace: "退格",
     Return: "回车",
+    Enter: "回车",
     Shift: "Shift",
     Ctrl: "Ctrl",
+    LAlt: "Alt",
+    W: "W",
+    A: "A",
+    D: "D",
   };
   return map[key] ?? key;
 }
@@ -33,19 +39,15 @@ export function HeatmapViewer() {
   const [error, setError] = useState<string | null>(null);
   const [payload, setPayload] = useState<KeyStatsExport | null>(null);
   const [selectedDate, setSelectedDate] = useState<string>("");
-  const [fileName, setFileName] = useState("示例数据 sample-keystats.json");
+  const [fileName, setFileName] = useState("KeyStats-Export-2026-08-25.json");
 
   const applyPayload = useCallback((data: KeyStatsExport, name: string) => {
     const dates = listAvailableDates(data);
     if (dates.length === 0) {
       throw new Error("导出文件中没有可用的日期数据");
     }
-    const preferred =
-      data.currentStats?.date && dates.includes(data.currentStats.date)
-        ? data.currentStats.date
-        : dates[dates.length - 1];
     setPayload(data);
-    setSelectedDate(preferred);
+    setSelectedDate(preferActiveDate(data));
     setFileName(name);
     setError(null);
     setStatus("ready");
@@ -55,9 +57,20 @@ export function HeatmapViewer() {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/sample-keystats.json");
-        if (!res.ok) throw new Error("无法加载示例数据");
-        const json = await res.json();
+        const primary = await fetch("/KeyStats-Export-2026-08-25.json");
+        if (primary.ok) {
+          const json = await primary.json();
+          if (cancelled) return;
+          applyPayload(
+            parseKeyStatsExport(json),
+            "KeyStats-Export-2026-08-25.json"
+          );
+          return;
+        }
+
+        const fallback = await fetch("/sample-keystats.json");
+        if (!fallback.ok) throw new Error("无法加载 KeyStats 数据");
+        const json = await fallback.json();
         if (cancelled) return;
         applyPayload(parseKeyStatsExport(json), "示例数据 sample-keystats.json");
       } catch (err) {
@@ -81,10 +94,17 @@ export function HeatmapViewer() {
     return getDayFromExport(payload, selectedDate);
   }, [payload, selectedDate]);
 
-  const tops = useMemo(
-    () => (day ? topKeys(day.keyCounts, 3) : []),
-    [day]
-  );
+  const tops = useMemo(() => {
+    if (!day) return [];
+    const layoutCounts: Record<string, number> = {};
+    for (const [key, count] of Object.entries(day.keyCounts)) {
+      // Fold Option/Alt aliases into LAlt for ranking display
+      const displayKey =
+        key === "Option" || key === "Alt" ? "LAlt" : key === "Enter" ? "Return" : key;
+      layoutCounts[displayKey] = (layoutCounts[displayKey] ?? 0) + count;
+    }
+    return topKeys(layoutCounts, 3);
+  }, [day]);
 
   const maxCount = useMemo(() => {
     if (!day) return 1;

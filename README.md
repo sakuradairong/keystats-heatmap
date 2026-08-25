@@ -26,4 +26,4 @@ npm run dev -- --port 43123
 - 悬停查看单键次数
 - 蓝→黄→橙热力色阶，贴近常见 KeyStats 可视化风格
 
-默认加载 `public/sample-keystats.json` 作为演示数据。
+默认加载 `public/KeyStats-Export-2026-08-25.json`（你的导出数据）。若缺失则回退到示例数据。
