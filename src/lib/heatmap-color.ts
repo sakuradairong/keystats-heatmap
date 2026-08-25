@@ -1,31 +1,33 @@
 import { interpolateRgbBasis } from "d3-interpolate";
 import { scaleSequential } from "d3-scale";
 
-/**
- * Soft blue → peach → warm orange, matching the Bilibili keyboard heatmap look.
- * Unused keys stay near-white outside this scale.
- */
+/** Bright soft blue → cream → amber → orange (reference heatmap) */
 const HEAT_COLORS = [
-  "#b7d4ef",
-  "#c9dff2",
-  "#dce8f0",
-  "#ebe4c8",
-  "#f3d9a0",
-  "#f2c06a",
-  "#ef9f3d",
-  "#ea7d28",
-  "#e2641d",
+  "#9ec9ef",
+  "#b5d7f3",
+  "#d2e4f2",
+  "#e8e6d4",
+  "#f3e2b0",
+  "#f5cf72",
+  "#f2b045",
+  "#ef8f2c",
+  "#ea6f1c",
+  "#e45a14",
 ];
 
 const interpolator = interpolateRgbBasis(HEAT_COLORS);
 
 export function createHeatScale(maxCount: number) {
   const domainMax = Math.max(1, maxCount);
-  return scaleSequential(interpolator).domain([0, domainMax]);
+  // Slight power curve so mid-high keys warm up sooner like the reference
+  return scaleSequential((t) => interpolator(Math.pow(t, 0.85))).domain([
+    0,
+    domainMax,
+  ]);
 }
 
 export function heatColor(count: number, maxCount: number): string {
-  if (count <= 0) return "#f7f8fa";
+  if (count <= 0) return "#ffffff";
   return createHeatScale(maxCount)(count);
 }
 
@@ -64,5 +66,5 @@ export function contrastText(bg: string): string {
   const g = (num >> 8) & 255;
   const b = num & 255;
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-  return luminance > 0.58 ? "#2a3340" : "#f8fafc";
+  return luminance > 0.55 ? "#3a4553" : "#ffffff";
 }

@@ -94,32 +94,6 @@ export function HeatmapViewer() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,#f4f6f8_0%,#e8edf2_48%,#dde4eb_100%)]" />
 
       <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-[1360px] flex-col px-5 pb-8 pt-8 sm:px-10 sm:pt-10">
-        <div className="mb-2 flex items-start justify-end gap-3">
-          <select
-            aria-label="选择日期"
-            className="h-8 rounded-md border border-slate-200/80 bg-white/70 px-2.5 text-sm text-slate-600 outline-none backdrop-blur transition hover:bg-white focus:border-slate-300"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            disabled={status !== "ready"}
-          >
-            {dates.map((date) => (
-              <option key={date} value={date}>
-                {date}
-              </option>
-            ))}
-          </select>
-          <label className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-slate-200/80 bg-white/70 px-2.5 text-sm text-slate-600 backdrop-blur transition hover:bg-white">
-            <input
-              type="file"
-              accept="application/json,.json"
-              className="sr-only"
-              onChange={(e) => onFile(e.target.files?.[0] ?? null)}
-            />
-            <Upload className="size-3.5" />
-            导入
-          </label>
-        </div>
-
         {status === "loading" && (
           <div className="flex flex-1 items-center justify-center py-24">
             <div className="animate-pulse text-slate-400">正在加载键盘热力图…</div>
@@ -145,22 +119,49 @@ export function HeatmapViewer() {
 
         {status === "ready" && day && (
           <>
-            <section className="mb-4 flex flex-col gap-6 sm:mb-2 sm:flex-row sm:items-end sm:justify-between">
-              <div className="min-w-0">
-                <div className="font-display text-[22px] leading-tight tracking-tight text-slate-500 sm:text-[26px]">
-                  {day.date}
-                </div>
-                <div className="mt-1 font-display text-[22px] leading-tight tracking-tight text-slate-500 sm:text-[26px]">
-                  第 {dayOrdinal(dates, selectedDate)} 天
-                </div>
-                <div className="mt-1 font-display text-[56px] font-semibold leading-none tracking-tight text-slate-700 sm:text-[72px]">
-                  {formatCount(day.totalKeyPresses)}
-                </div>
+            <section className="relative mb-2 sm:mb-0">
+              <div className="absolute right-0 top-0 z-20 flex items-center gap-2">
+                <select
+                  aria-label="选择日期"
+                  className="h-8 rounded-md border border-slate-200/70 bg-white/60 px-2.5 text-sm text-slate-500 outline-none backdrop-blur transition hover:bg-white/90 focus:border-slate-300"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                >
+                  {dates.map((date) => (
+                    <option key={date} value={date}>
+                      {date}
+                    </option>
+                  ))}
+                </select>
+                <label className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-slate-200/70 bg-white/60 px-2.5 text-sm text-slate-500 backdrop-blur transition hover:bg-white/90">
+                  <input
+                    type="file"
+                    accept="application/json,.json"
+                    className="sr-only"
+                    onChange={(e) => onFile(e.target.files?.[0] ?? null)}
+                  />
+                  <Upload className="size-3.5" />
+                  导入
+                </label>
               </div>
 
-              <h1 className="max-w-[14em] font-display text-[22px] leading-snug tracking-tight text-slate-600 sm:pb-3 sm:text-right sm:text-[28px]">
-                个人日常键盘使用频次数据可视化
-              </h1>
+              <div className="flex flex-col gap-8 pr-0 sm:flex-row sm:items-end sm:justify-between sm:pr-[220px]">
+                <div className="min-w-0">
+                  <div className="font-display text-[22px] leading-[1.15] tracking-tight text-[#6b7585] sm:text-[26px]">
+                    {day.date}
+                  </div>
+                  <div className="font-display text-[22px] leading-[1.15] tracking-tight text-[#6b7585] sm:text-[26px]">
+                    第 {dayOrdinal(dates, selectedDate)} 天
+                  </div>
+                  <div className="mt-1 font-display text-[58px] font-semibold leading-none tracking-tight text-[#4a5565] sm:text-[76px]">
+                    {formatCount(day.totalKeyPresses)}
+                  </div>
+                </div>
+
+                <h1 className="max-w-[13em] font-display text-[22px] leading-snug tracking-tight text-[#6b7585] sm:pb-2 sm:text-right sm:text-[28px]">
+                  个人日常键盘使用频次数据可视化
+                </h1>
+              </div>
             </section>
 
             <div className="flex flex-1 flex-col justify-center">
