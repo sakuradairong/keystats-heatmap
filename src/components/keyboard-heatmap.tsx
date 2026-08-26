@@ -137,8 +137,8 @@ function KeyCap({
             background: `linear-gradient(145deg, color-mix(in srgb, ${color} 82%, white) 0%, ${color} 58%, ${darkenHex(color, 0.08)} 100%)`,
             color: textColor,
             boxShadow: active
-              ? "inset 0 0 0 2px rgba(37,49,60,.88), inset 0 1px 0 rgba(255,255,255,.44), 0 0 0.85px 0.4px rgba(37,49,60,.24)"
-              : "inset 0 1px 0 rgba(255,255,255,.42), 0 0 0.85px 0.4px rgba(37,49,60,.22)",
+              ? "inset 0 0 0 2px rgba(37,49,60,.88), inset 0 1px 0 rgba(255,255,255,.44)"
+              : "inset 0 1px 0 rgba(255,255,255,.42)",
           }}
         >
           <span
