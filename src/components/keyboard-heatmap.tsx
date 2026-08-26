@@ -81,9 +81,9 @@ function KeyCap({
   const leftFace = darkenHex(color, 0.11);
   const frontFace = darkenHex(color, 0.21);
   const rightFace = darkenHex(color, 0.31);
-  const pad = Math.max(5, unit * 0.1);
-  const labelSize = keyDef.w >= 2 ? 11 : 12;
-  const countSize = keyDef.w >= 4 ? 10 : 9;
+  const pad = Math.max(6, unit * 0.11);
+  const labelSize = keyDef.w >= 2 ? 13 : 14;
+  const countSize = keyDef.w >= 4 ? 12 : 11;
 
   const handlePointerEnter = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (event.pointerType !== "touch") onHover(keyDef.id);
@@ -119,7 +119,7 @@ function KeyCap({
       <span
         className="keycap-contact pointer-events-none absolute inset-[3px] rounded-[6px]"
         style={{
-          opacity: 0.1 + normalized * 0.08,
+          opacity: 0.12 + normalized * 0.1,
           transform: "translateZ(1px) translateY(2px)",
         }}
       />
@@ -148,8 +148,8 @@ function KeyCap({
               top: pad * 0.8,
               maxWidth: `calc(100% - ${pad * 1.5}px)`,
               fontSize: labelSize,
-              fontWeight: 600,
-              letterSpacing: "0.015em",
+              fontWeight: 700,
+              letterSpacing: "0.01em",
             }}
           >
             {keyDef.label}
@@ -162,7 +162,7 @@ function KeyCap({
                 bottom: pad * 0.72,
                 maxWidth: "82%",
                 fontSize: countSize,
-                fontWeight: 600,
+                fontWeight: 700,
               }}
             >
               {formatCount(count)}
@@ -323,7 +323,7 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
   const chassisDepth = 24;
 
   return (
-    <div className="keyboard-stage relative mx-auto w-full max-w-[1320px]">
+    <div className="keyboard-stage relative mx-auto w-full max-w-[1400px]">
       <div className="keyboard-edge-fade keyboard-edge-fade-left" />
       <div className="keyboard-edge-fade keyboard-edge-fade-right" />
       <div className="keyboard-scroll mx-auto w-full overflow-x-auto overflow-y-hidden">
@@ -331,10 +331,10 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
           className="keyboard-scene relative mx-auto"
           style={{
             width: "var(--kb-scene-width)",
-            maxWidth: 1180,
+            maxWidth: 1280,
             aspectRatio: "var(--kb-aspect)",
             perspective: "var(--kb-perspective)",
-            perspectiveOrigin: "50% 32%",
+            perspectiveOrigin: "50% 45%",
           }}
         >
           <div
@@ -343,8 +343,9 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
               width,
               height,
               transform:
-                "translateX(-50%) rotateX(var(--kb-tilt)) rotateZ(var(--kb-yaw)) scale(var(--kb-scale))",
+                "translate3d(-50%, 0, 0) rotateX(var(--kb-tilt)) rotateZ(var(--kb-yaw)) scale(var(--kb-scale))",
               transformStyle: "preserve-3d",
+              backfaceVisibility: "hidden",
             }}
           >
             <div className="keyboard-ground-shadow pointer-events-none absolute -inset-[28px] rounded-[28px]" />
