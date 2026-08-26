@@ -132,13 +132,13 @@ function KeyCap({
         }}
       >
         <span
-          className="keycap-top absolute inset-0 rounded-[7px]"
+          className="keycap-face keycap-top absolute inset-0 rounded-[8px]"
           style={{
             background: `linear-gradient(145deg, color-mix(in srgb, ${color} 82%, white) 0%, ${color} 58%, ${darkenHex(color, 0.08)} 100%)`,
             color: textColor,
             boxShadow: active
-              ? "inset 0 0 0 2px rgba(37,49,60,.88), inset 0 1px 0 rgba(255,255,255,.44)"
-              : "inset 0 1px 0 rgba(255,255,255,.42)",
+              ? "inset 0 0 0 2px rgba(37,49,60,.88), inset 0 1px 0 rgba(255,255,255,.44), 0 0 0.85px 0.4px rgba(37,49,60,.24)"
+              : "inset 0 1px 0 rgba(255,255,255,.42), 0 0 0.85px 0.4px rgba(37,49,60,.22)",
           }}
         >
           <span
@@ -171,7 +171,7 @@ function KeyCap({
         </span>
 
         <span
-          className="absolute left-0 right-0 rounded-b-[6px]"
+          className="keycap-face keycap-face-front absolute left-0 right-0 rounded-b-[7px]"
           style={{
             height: totalDepth,
             top: "100%",
@@ -181,7 +181,7 @@ function KeyCap({
           }}
         />
         <span
-          className="absolute bottom-0 top-0 rounded-r-[5px]"
+          className="keycap-face keycap-face-right absolute bottom-0 top-0 rounded-r-[6px]"
           style={{
             width: totalDepth,
             left: "100%",
@@ -191,7 +191,7 @@ function KeyCap({
           }}
         />
         <span
-          className="absolute bottom-0 top-0 rounded-l-[5px]"
+          className="keycap-face keycap-face-left absolute bottom-0 top-0 rounded-l-[6px]"
           style={{
             width: totalDepth,
             right: "100%",
@@ -338,14 +338,13 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
           }}
         >
           <div
-            className="keyboard-plate absolute left-1/2 top-[8%] origin-center"
+            className="keyboard-plate absolute left-1/2 origin-center"
             style={{
               width,
               height,
               transform:
                 "translate3d(-50%, 0, 0) rotateX(var(--kb-tilt)) rotateZ(var(--kb-yaw))",
               transformStyle: "preserve-3d",
-              backfaceVisibility: "hidden",
             }}
           >
             <div className="keyboard-ground-shadow pointer-events-none absolute -inset-[28px] rounded-[28px]" />
