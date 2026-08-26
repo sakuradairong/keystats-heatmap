@@ -71,11 +71,17 @@
 .studio-page::after {
   position: fixed;
   inset: 0;
+  z-index: 0;
   pointer-events: none;
   content: "";
-  opacity: 0.18;
+  opacity: 0.08;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.08'/%3E%3C/svg%3E");
   mix-blend-mode: multiply;
+}
+
+.studio-page > * {
+  position: relative;
+  z-index: 1;
 }
 
 .masthead-grid {
@@ -131,18 +137,21 @@
 }
 
 .keyboard-stage {
-  --kb-scale: 0.9;
   --kb-tilt: 26deg;
   --kb-yaw: -8deg;
   --kb-aspect: 1.9 / 1;
-  --kb-perspective: 1500px;
-  --kb-scene-width: 1020px;
+  --kb-perspective: 1800px;
+  --kb-scene-width: max(100%, 1180px);
+  --kb-zoom: 1;
   isolation: isolate;
   animation: keyboard-enter 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .keyboard-plate {
   top: -2%;
+  zoom: var(--kb-zoom);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 .keyboard-scroll {
@@ -207,8 +216,8 @@
 }
 
 .keycap-contact {
-  background: rgba(37, 49, 60, 0.55);
-  box-shadow: 0 2px 6px rgba(37, 49, 60, 0.18);
+  background: rgba(37, 49, 60, 0.28);
+  box-shadow: none;
 }
 
 .keycap-prism {
@@ -227,7 +236,8 @@
 .keycap-count {
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
-  transform: translateZ(0.5px);
+  transform: translateZ(1px);
+  -webkit-text-stroke: 0.25px currentColor;
 }
 
 .keycap:hover .keycap-prism,
@@ -308,12 +318,12 @@
   }
 
   .keyboard-stage {
-    --kb-scale: 0.94;
     --kb-tilt: 28deg;
     --kb-yaw: -10deg;
     --kb-aspect: 1.86 / 1;
-    --kb-perspective: 1450px;
-    --kb-scene-width: max(100%, 1080px);
+    --kb-perspective: 1700px;
+    --kb-scene-width: max(100%, 1240px);
+    --kb-zoom: 1;
   }
 
   .keyboard-scroll {
@@ -344,23 +354,23 @@
   }
 
   .keyboard-stage {
-    --kb-scale: 0.97;
     --kb-tilt: 28deg;
     --kb-yaw: -10deg;
     --kb-aspect: 1.84 / 1;
-    --kb-perspective: 1420px;
-    --kb-scene-width: max(100%, 1180px);
+    --kb-perspective: 1650px;
+    --kb-scene-width: max(100%, 1320px);
+    --kb-zoom: 1;
   }
 }
 
 @media (min-width: 1280px) {
   .keyboard-stage {
-    --kb-scale: 1;
     --kb-tilt: 28deg;
     --kb-yaw: -12deg;
     --kb-aspect: 1.82 / 1;
-    --kb-perspective: 1400px;
-    --kb-scene-width: min(100%, 1280px);
+    --kb-perspective: 1600px;
+    --kb-scene-width: min(100%, 1360px);
+    --kb-zoom: 1;
   }
 
   .keyboard-scroll {
@@ -374,13 +384,17 @@
   }
 }
 
-@media (max-width: 479px) {
-  .keycap-count {
-    font-size: 10px !important;
+@media (max-width: 767px) {
+  .keyboard-stage {
+    --kb-zoom: 1;
+    --kb-scene-width: 1280px;
+    --kb-perspective: 1900px;
   }
+}
 
-  .keycap-label {
-    font-size: 12px !important;
+@media (max-width: 479px) {
+  .keyboard-stage {
+    --kb-zoom: 1;
   }
 }
 

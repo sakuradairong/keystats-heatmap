@@ -81,9 +81,9 @@ function KeyCap({
   const leftFace = darkenHex(color, 0.11);
   const frontFace = darkenHex(color, 0.21);
   const rightFace = darkenHex(color, 0.31);
-  const pad = Math.max(6, unit * 0.11);
-  const labelSize = keyDef.w >= 2 ? 13 : 14;
-  const countSize = keyDef.w >= 4 ? 12 : 11;
+  const pad = Math.max(6, unit * 0.12);
+  const labelSize = keyDef.w >= 2 ? 14 : 15;
+  const countSize = keyDef.w >= 4 ? 13 : 12;
 
   const handlePointerEnter = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (event.pointerType !== "touch") onHover(keyDef.id);
@@ -331,7 +331,7 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
           className="keyboard-scene relative mx-auto"
           style={{
             width: "var(--kb-scene-width)",
-            maxWidth: 1280,
+            maxWidth: 1360,
             aspectRatio: "var(--kb-aspect)",
             perspective: "var(--kb-perspective)",
             perspectiveOrigin: "50% 45%",
@@ -343,7 +343,7 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
               width,
               height,
               transform:
-                "translate3d(-50%, 0, 0) rotateX(var(--kb-tilt)) rotateZ(var(--kb-yaw)) scale(var(--kb-scale))",
+                "translate3d(-50%, 0, 0) rotateX(var(--kb-tilt)) rotateZ(var(--kb-yaw))",
               transformStyle: "preserve-3d",
               backfaceVisibility: "hidden",
             }}

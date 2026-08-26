@@ -7,8 +7,8 @@ export type KeyDef = {
   h?: number;
 };
 
-export const KEYBOARD_UNIT = 64;
-export const KEY_GAP = 8;
+export const KEYBOARD_UNIT = 60;
+export const KEY_GAP = 7;
 
 /** Full-size ANSI 104-key layout in unit coordinates */
 export const KEYBOARD_LAYOUT: KeyDef[] = [

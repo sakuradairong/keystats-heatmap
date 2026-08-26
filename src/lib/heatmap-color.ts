@@ -124,12 +124,12 @@ function contrastRatio(a: Rgb, b: Rgb): number {
 
 export function contrastText(background: string): string {
   const color = parseColor(background);
-  if (!color) return "#172029";
-  const dark = parseColor("#172029")!;
-  const light = parseColor("#ffffff")!;
+  if (!color) return "#121920";
+  const dark = parseColor("#121920")!;
+  const light = parseColor("#fffaf5")!;
   return contrastRatio(color, dark) >= contrastRatio(color, light)
-    ? "#172029"
-    : "#ffffff";
+    ? "#121920"
+    : "#fffaf5";
 }
 
 export function contrastForTesting(a: string, b: string): number {
