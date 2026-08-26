@@ -240,7 +240,7 @@
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   /* Dark soft rim — light halos made stair-steps more obvious. */
-  box-shadow: 0 0 0.85px 0.4px rgba(37, 49, 60, 0.22);
+  box-shadow: 0 0 1px 0.5px rgba(37, 49, 60, 0.2);
 }
 
 .keycap-top {
@@ -345,7 +345,7 @@
     --kb-aspect: 1.86 / 1;
     --kb-perspective: 1700px;
     --kb-scene-width: max(100%, 1240px);
-    --kb-edge-aa: 0.7px;
+    --kb-edge-aa: 0.95px;
   }
 
   .keyboard-scroll {
@@ -381,7 +381,7 @@
     --kb-aspect: 1.84 / 1;
     --kb-perspective: 1650px;
     --kb-scene-width: max(100%, 1320px);
-    --kb-edge-aa: 0.65px;
+    --kb-edge-aa: 0.9px;
   }
 }
 
@@ -392,7 +392,7 @@
     --kb-aspect: 1.82 / 1;
     --kb-perspective: 1600px;
     --kb-scene-width: min(100%, 1360px);
-    --kb-edge-aa: 0.6px;
+    --kb-edge-aa: 0.85px;
   }
 
   .keyboard-scroll {
@@ -410,13 +410,13 @@
   .keyboard-stage {
     --kb-scene-width: 1280px;
     --kb-perspective: 1900px;
-    --kb-edge-aa: 0.8px;
+    --kb-edge-aa: 1.05px;
   }
 }
 
 @media (max-width: 479px) {
   .keyboard-stage {
-    --kb-edge-aa: 0.85px;
+    --kb-edge-aa: 1.1px;
   }
 }
 
