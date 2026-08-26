@@ -32,22 +32,33 @@ test("changes the authoritative daily total", async ({ page }) => {
   await expect(page.getByTestId("total-count")).toHaveText("17,401");
 });
 
-test("keeps an edge-key tooltip inside the viewport", async ({ page }) => {
+test("keeps tooltip continuous while moving across neighboring keys", async ({
+  page,
+}) => {
   await expectReady(page);
-  const escapeKey = page.locator('[data-key-id="Esc"]');
-  await escapeKey.hover();
-  const tooltip = page.getByRole("tooltip");
-  await expect(tooltip).toBeVisible();
+  await page.locator(".keyboard-stage").scrollIntoViewIfNeeded();
 
-  const [box, viewport] = await Promise.all([
-    tooltip.boundingBox(),
-    page.evaluate(() => ({ width: window.innerWidth, height: window.innerHeight })),
-  ]);
-  expect(box).not.toBeNull();
-  expect(box!.x).toBeGreaterThanOrEqual(0);
-  expect(box!.y).toBeGreaterThanOrEqual(0);
-  expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width);
-  expect(box!.y + box!.height).toBeLessThanOrEqual(viewport.height);
+  for (const id of ["A", "S", "D", "F"]) {
+    const key = page.locator(`[data-key-id="${id}"]`);
+    await key.hover();
+    await expect(page.getByRole("tooltip")).toContainText(id);
+  }
+
+  const a = page.locator('[data-key-id="A"]');
+  const s = page.locator('[data-key-id="S"]');
+  const aBox = await a.boundingBox();
+  const sBox = await s.boundingBox();
+  expect(aBox).not.toBeNull();
+  expect(sBox).not.toBeNull();
+
+  await page.mouse.move(aBox!.x + aBox!.width / 2, aBox!.y + aBox!.height / 2);
+  await expect(page.getByRole("tooltip")).toContainText("A");
+  await page.mouse.move(
+    (aBox!.x + aBox!.width + sBox!.x) / 2,
+    aBox!.y + aBox!.height / 2,
+    { steps: 12 }
+  );
+  await expect(page.getByRole("tooltip")).toBeVisible();
 });
 
 test("moves a pinned tooltip with keyboard focus", async ({ page }) => {

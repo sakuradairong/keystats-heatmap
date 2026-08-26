@@ -52,9 +52,8 @@ function KeyCap({
   domainMax,
   active,
   registerRef,
-  onHover,
   onFocusKey,
-  onLeave,
+  onBlurKey,
   onPin,
 }: {
   keyDef: KeyDef;
@@ -62,9 +61,8 @@ function KeyCap({
   domainMax: number;
   active: boolean;
   registerRef: (id: string, node: HTMLButtonElement | null) => void;
-  onHover: (id: string) => void;
   onFocusKey: (id: string) => void;
-  onLeave: (id: string) => void;
+  onBlurKey: (id: string, relatedTarget: EventTarget | null) => void;
   onPin: (id: string) => void;
 }) {
   const unit = KEYBOARD_UNIT;
@@ -84,14 +82,7 @@ function KeyCap({
   const pad = Math.max(5, unit * 0.1);
   const labelSize = keyDef.w >= 2 ? 11 : 12;
   const countSize = keyDef.w >= 4 ? 10 : 9;
-
-  const handlePointerEnter = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (event.pointerType !== "touch") onHover(keyDef.id);
-  };
-
-  const handlePointerLeave = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    if (event.pointerType !== "touch") onLeave(keyDef.id);
-  };
+  const baseZ = Math.round(keyDef.y * 100 + keyDef.x);
 
   return (
     <button
@@ -106,12 +97,11 @@ function KeyCap({
         width,
         height,
         transformStyle: "preserve-3d",
-        zIndex: active ? 999 : Math.round(keyDef.y * 100 + keyDef.x),
+        // Keep stacking by row — jumping to 999 steals hits from neighbors.
+        zIndex: active ? baseZ + 2 : baseZ,
       }}
-      onPointerEnter={handlePointerEnter}
-      onPointerLeave={handlePointerLeave}
       onFocus={() => onFocusKey(keyDef.id)}
-      onBlur={() => onLeave(keyDef.id)}
+      onBlur={(event) => onBlurKey(keyDef.id, event.relatedTarget)}
       onClick={() => onPin(keyDef.id)}
       aria-label={`${keyDef.label}，${formatCount(count)} 次`}
       aria-describedby={active ? TOOLTIP_ID : undefined}
@@ -216,6 +206,9 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
     useState<TooltipPosition | null>(null);
   const keyRefs = useRef(new Map<string, HTMLButtonElement>());
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const plateRef = useRef<HTMLDivElement>(null);
+  const activeKeyRef = useRef<ActiveKey | null>(null);
+  activeKeyRef.current = activeKey;
 
   const resolvedKeys = useMemo(
     () =>
@@ -241,6 +234,19 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
     []
   );
 
+  const keyIdFromPoint = useCallback((clientX: number, clientY: number) => {
+    const plate = plateRef.current;
+    if (!plate) return null;
+    for (const node of document.elementsFromPoint(clientX, clientY)) {
+      if (!(node instanceof Element)) continue;
+      const key = node.closest<HTMLElement>("[data-key-id]");
+      if (key && plate.contains(key)) {
+        return key.dataset.keyId ?? null;
+      }
+    }
+    return null;
+  }, []);
+
   const updateTooltipPosition = useCallback(() => {
     if (!activeKey) return;
     const anchor = keyRefs.current.get(activeKey.id);
@@ -264,7 +270,16 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
         anchorRect.left + anchorRect.width / 2 - tooltipRect.width / 2
       )
     );
-    setTooltipPosition({ left, top });
+    setTooltipPosition((current) => {
+      if (
+        current &&
+        Math.abs(current.left - left) < 0.5 &&
+        Math.abs(current.top - top) < 0.5
+      ) {
+        return current;
+      }
+      return { left, top };
+    });
   }, [activeKey]);
 
   useLayoutEffect(() => {
@@ -301,17 +316,41 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
     };
   }, [activeKey]);
 
-  const handleHover = (id: string) => {
-    if (!activeKey?.pinned) setActiveKey({ id, pinned: false });
+  const handlePlatePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "touch") return;
+    if (activeKeyRef.current?.pinned) return;
+    const id = keyIdFromPoint(event.clientX, event.clientY);
+    // Stay on the last key across gaps so the tooltip does not flicker/bounce.
+    if (!id) return;
+    setActiveKey((current) => {
+      if (current?.pinned) return current;
+      if (current?.id === id) return current;
+      return { id, pinned: false };
+    });
   };
+
+  const handlePlatePointerLeave = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === "touch") return;
+    if (activeKeyRef.current?.pinned) return;
+    setActiveKey((current) => (current && !current.pinned ? null : current));
+  };
+
   const handleFocus = (id: string) => {
     setActiveKey({ id, pinned: false });
   };
-  const handleLeave = (id: string) => {
+
+  const handleBlur = (id: string, relatedTarget: EventTarget | null) => {
+    if (
+      relatedTarget instanceof Element &&
+      plateRef.current?.contains(relatedTarget)
+    ) {
+      return;
+    }
     setActiveKey((current) =>
       current?.id === id && !current.pinned ? null : current
     );
   };
+
   const handlePin = (id: string) => {
     setActiveKey((current) =>
       current?.id === id && current.pinned ? null : { id, pinned: true }
@@ -338,7 +377,10 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
           }}
         >
           <div
+            ref={plateRef}
             className="keyboard-plate absolute left-1/2 origin-center"
+            onPointerMove={handlePlatePointerMove}
+            onPointerLeave={handlePlatePointerLeave}
             style={{
               width,
               height,
@@ -349,7 +391,7 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
           >
             <div className="keyboard-ground-shadow pointer-events-none absolute -inset-[28px] rounded-[28px]" />
             <div
-              className="keyboard-chassis absolute -inset-[22px] rounded-[22px]"
+              className="keyboard-chassis pointer-events-none absolute -inset-[22px] rounded-[22px]"
               style={{
                 transform: `translateZ(-${chassisDepth}px)`,
                 transformStyle: "preserve-3d",
@@ -383,9 +425,8 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
                 domainMax={domainMax}
                 active={activeKey?.id === keyDef.id}
                 registerRef={registerRef}
-                onHover={handleHover}
                 onFocusKey={handleFocus}
-                onLeave={handleLeave}
+                onBlurKey={handleBlur}
                 onPin={handlePin}
               />
             ))}
