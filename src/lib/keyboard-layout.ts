@@ -7,8 +7,6 @@ export type KeyDef = {
   h?: number;
 };
 
-const U = 1;
-
 export const KEYBOARD_UNIT = 58;
 export const KEY_GAP = 7;
 
@@ -134,45 +132,36 @@ export const KEYBOARD_LAYOUT: KeyDef[] = [
 export const KEYBOARD_WIDTH_U = 22.5;
 export const KEYBOARD_HEIGHT_U = 6.25;
 
-/** Map layout key id -> possible KeyStats count keys */
+/** Map a normalized KeyStats count to one physical layout key. */
 export function resolveKeyCount(
   keyId: string,
   counts: Record<string, number>
 ): number {
-  const aliases: Record<string, string[]> = {
-    Shift: ["Shift", "LShift"],
-    RShift: ["Shift", "RShift"],
-    LCtrl: ["LCtrl", "Ctrl"],
-    RCtrl: ["RCtrl", "Ctrl"],
-    LAlt: ["LAlt", "Option", "Alt"],
-    RAlt: ["RAlt", "Option", "Alt"],
-    LWin: ["LWin", "Cmd", "Win"],
-    RWin: ["RWin", "Cmd", "Win"],
-    Return: ["Return", "Enter"],
-    Apps: ["Apps", "Menu"],
-  };
+  const sum = (...keys: string[]) =>
+    keys.reduce((total, key) => total + (counts[key] ?? 0), 0);
 
-  const candidates = aliases[keyId] ?? [keyId];
-  let total = 0;
-  for (const candidate of candidates) {
-    total += counts[candidate] ?? 0;
+  switch (keyId) {
+    case "Shift":
+      return sum("LShift", "Shift");
+    case "RShift":
+      return sum("RShift");
+    case "LCtrl":
+      return sum("LCtrl", "Ctrl");
+    case "RCtrl":
+      return sum("RCtrl");
+    case "LAlt":
+      return sum("LAlt", "Option", "Alt");
+    case "RAlt":
+      return sum("RAlt");
+    case "LWin":
+      return sum("LWin", "Cmd", "Win");
+    case "RWin":
+      return sum("RWin");
+    case "Return":
+      return sum("Return", "Enter");
+    case "Apps":
+      return sum("Apps", "Menu");
+    default:
+      return counts[keyId] ?? 0;
   }
-
-  // Avoid double-counting shared Shift/Ctrl when both sides exist separately
-  if (keyId === "RShift" && counts["RShift"] == null && counts["Shift"] != null) {
-    return 0;
-  }
-  if (keyId === "RCtrl" && counts["RCtrl"] == null && counts["Ctrl"] != null) {
-    return 0;
-  }
-  if (keyId === "RAlt" && counts["RAlt"] == null && (counts["Option"] != null || counts["Alt"] != null)) {
-    return 0;
-  }
-  if (keyId === "RWin" && counts["RWin"] == null && (counts["Cmd"] != null || counts["Win"] != null)) {
-    return 0;
-  }
-
-  return total;
 }
-
-void U;

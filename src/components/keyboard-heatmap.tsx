@@ -1,6 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
+import { createPortal } from "react-dom";
 import {
   KEYBOARD_HEIGHT_U,
   KEYBOARD_LAYOUT,
@@ -8,148 +18,154 @@ import {
   KEYBOARD_WIDTH_U,
   KEY_GAP,
   resolveKeyCount,
+  type KeyDef,
 } from "@/lib/keyboard-layout";
-import { contrastText, darkenHex, heatColor } from "@/lib/heatmap-color";
+import {
+  contrastText,
+  darkenHex,
+  heatColor,
+  heatDomain,
+  normalizeHeatCount,
+} from "@/lib/heatmap-color";
 import { formatCount } from "@/lib/keystats";
 
 type Props = {
   keyCounts: Record<string, number>;
 };
 
+type ActiveKey = {
+  id: string;
+  pinned: boolean;
+};
+
+type TooltipPosition = {
+  left: number;
+  top: number;
+};
+
+const TOOLTIP_ID = "keyboard-key-tooltip";
+const VIEWPORT_INSET = 12;
+
 function KeyCap({
   keyDef,
   count,
-  maxCount,
-  unit,
-  gap,
-  hovered,
+  domainMax,
+  active,
+  registerRef,
   onHover,
+  onFocusKey,
+  onLeave,
+  onPin,
 }: {
-  keyDef: (typeof KEYBOARD_LAYOUT)[number];
+  keyDef: KeyDef;
   count: number;
-  maxCount: number;
-  unit: number;
-  gap: number;
-  hovered: boolean;
-  onHover: (id: string | null) => void;
+  domainMax: number;
+  active: boolean;
+  registerRef: (id: string, node: HTMLButtonElement | null) => void;
+  onHover: (id: string) => void;
+  onFocusKey: (id: string) => void;
+  onLeave: (id: string) => void;
+  onPin: (id: string) => void;
 }) {
-  const h = keyDef.h ?? 1;
+  const unit = KEYBOARD_UNIT;
+  const gap = KEY_GAP;
+  const keyHeightUnits = keyDef.h ?? 1;
   const width = keyDef.w * unit - gap;
-  const height = h * unit - gap;
-  const depth = Math.max(16, unit * 0.3);
-  const color = heatColor(count, maxCount);
-  const frontColor = darkenHex(color, 0.2);
-  const sideColor = darkenHex(color, 0.32);
-  const text = contrastText();
-  const pad = Math.max(4, unit * 0.09);
+  const height = keyHeightUnits * unit - gap;
+  const normalized = normalizeHeatCount(count, domainMax);
+  const baseDepth = 12;
+  const dataDepth = normalized * unit * 0.24;
+  const totalDepth = baseDepth + dataDepth;
+  const color = heatColor(count, domainMax);
+  const textColor = contrastText(color);
+  const leftFace = darkenHex(color, 0.11);
+  const frontFace = darkenHex(color, 0.21);
+  const rightFace = darkenHex(color, 0.31);
+  const pad = Math.max(5, unit * 0.1);
+  const labelSize = keyDef.w >= 2 ? 11 : 12;
+  const countSize = keyDef.w >= 4 ? 10 : 9;
 
-  const normalized =
-    maxCount > 0 ? Math.sqrt(Math.max(0, count) / maxCount) : 0;
-  const heatLift = normalized * unit * 0.7;
-  const baseLift = depth + 6;
-  const lift = baseLift + heatLift;
-  const finalLift = hovered ? lift + 8 : lift;
+  const handlePointerEnter = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType !== "touch") onHover(keyDef.id);
+  };
 
-  const labelSize =
-    keyDef.w >= 4
-      ? Math.max(9, unit * 0.16)
-      : keyDef.w >= 2
-        ? Math.max(8, unit * 0.15)
-        : Math.max(9, unit * 0.175);
-  const countSize =
-    keyDef.w >= 4
-      ? Math.max(8, unit * 0.14)
-      : Math.max(7, unit * 0.125);
+  const handlePointerLeave = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (event.pointerType !== "touch") onLeave(keyDef.id);
+  };
 
   return (
     <button
+      ref={(node) => registerRef(keyDef.id, node)}
       type="button"
       className="keycap absolute origin-bottom border-0 bg-transparent p-0 text-left"
+      data-active={count > 0 ? "true" : "false"}
+      data-key-id={keyDef.id}
       style={{
         left: keyDef.x * unit,
         top: keyDef.y * unit,
         width,
         height,
         transformStyle: "preserve-3d",
-        zIndex: hovered
-          ? 80
-          : Math.round(keyDef.y * 40 + keyDef.x + heatLift * 2),
+        zIndex: active ? 999 : Math.round(keyDef.y * 100 + keyDef.x),
       }}
-      onMouseEnter={() => onHover(keyDef.id)}
-      onMouseLeave={() => onHover(null)}
-      onFocus={() => onHover(keyDef.id)}
-      onBlur={() => onHover(null)}
-      aria-label={`${keyDef.label}: ${count}`}
+      onPointerEnter={handlePointerEnter}
+      onPointerLeave={handlePointerLeave}
+      onFocus={() => onFocusKey(keyDef.id)}
+      onBlur={() => onLeave(keyDef.id)}
+      onClick={() => onPin(keyDef.id)}
+      aria-label={`${keyDef.label}，${formatCount(count)} 次`}
+      aria-describedby={active ? TOOLTIP_ID : undefined}
     >
       <span
-        className="pointer-events-none absolute inset-[2px] rounded-[5px]"
+        className="keycap-contact pointer-events-none absolute inset-[3px] rounded-[6px]"
         style={{
-          background: "rgba(40, 55, 75, 0.2)",
-          transform: "translateZ(1px) translateY(3px)",
-          filter: "blur(2.5px)",
+          opacity: 0.1 + normalized * 0.08,
+          transform: "translateZ(1px) translateY(2px)",
         }}
       />
 
       <span
-        className="keycap-solid pointer-events-none absolute inset-0"
+        className="keycap-prism pointer-events-none absolute inset-0"
         style={{
+          transform: `translateZ(${totalDepth}px)`,
           transformStyle: "preserve-3d",
-          transform: `translateZ(${finalLift}px)`,
-          transition: "transform 200ms ease, filter 200ms ease",
         }}
       >
         <span
-          className="absolute inset-0 overflow-hidden rounded-[6px]"
+          className="keycap-top absolute inset-0 rounded-[7px]"
           style={{
-            pointerEvents: "auto",
-            background: `linear-gradient(155deg, ${color} 0%, ${darkenHex(color, 0.08)} 100%)`,
-            color: text,
-            transform: "translateZ(0)",
-            boxShadow: hovered
-              ? "0 16px 26px rgba(40, 55, 75, 0.22), inset 0 1px 0 rgba(255,255,255,0.5)"
-              : "0 5px 12px rgba(40, 55, 75, 0.12), inset 0 1px 0 rgba(255,255,255,0.5)",
+            background: `linear-gradient(145deg, color-mix(in srgb, ${color} 82%, white) 0%, ${color} 58%, ${darkenHex(color, 0.08)} 100%)`,
+            color: textColor,
+            boxShadow: active
+              ? "inset 0 0 0 2px rgba(37,49,60,.88), inset 0 1px 0 rgba(255,255,255,.44)"
+              : "inset 0 1px 0 rgba(255,255,255,.42)",
           }}
         >
           <span
-            className="absolute font-display leading-none"
+            className="keycap-label absolute overflow-hidden text-ellipsis whitespace-nowrap font-display leading-none"
             style={{
               left: pad,
-              top: pad * 0.75,
+              top: pad * 0.8,
+              maxWidth: `calc(100% - ${pad * 1.5}px)`,
               fontSize: labelSize,
-              fontWeight: 500,
-              letterSpacing: "0.01em",
-              maxWidth: "calc(100% - 8px)",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
+              fontWeight: 600,
+              letterSpacing: "0.015em",
             }}
           >
             {keyDef.label}
           </span>
-          <span
-            className="absolute font-mono tabular-nums leading-none"
-            style={{
-              right: pad * 0.85,
-              bottom: pad * 0.65,
-              fontSize: countSize,
-              fontWeight: 600,
-              maxWidth: "90%",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {formatCount(count)}
-          </span>
-
-          {hovered && (
+          {count > 0 && (
             <span
-              className="pointer-events-none absolute left-1/2 top-0 z-30 whitespace-nowrap rounded-md bg-slate-800/92 px-2 py-1 font-mono text-[11px] font-semibold text-white shadow-lg"
+              className="keycap-count absolute overflow-hidden text-ellipsis whitespace-nowrap font-mono tabular-nums leading-none"
               style={{
-                transform: "translate3d(-50%, calc(-100% - 10px), 56px)",
+                right: pad * 0.85,
+                bottom: pad * 0.72,
+                maxWidth: "82%",
+                fontSize: countSize,
+                fontWeight: 600,
               }}
             >
-              {keyDef.label} · {formatCount(count)}
+              {formatCount(count)}
             </span>
           )}
         </span>
@@ -157,31 +173,29 @@ function KeyCap({
         <span
           className="absolute left-0 right-0 rounded-b-[6px]"
           style={{
-            height: depth,
+            height: totalDepth,
             top: "100%",
-            background: `linear-gradient(180deg, ${frontColor} 0%, ${darkenHex(color, 0.28)} 100%)`,
+            background: `linear-gradient(180deg, ${frontFace}, ${darkenHex(frontFace, 0.1)})`,
             transformOrigin: "top",
             transform: "rotateX(-90deg)",
           }}
         />
-
         <span
-          className="absolute top-0 bottom-0 rounded-r-[5px]"
+          className="absolute bottom-0 top-0 rounded-r-[5px]"
           style={{
-            width: depth,
+            width: totalDepth,
             left: "100%",
-            background: `linear-gradient(90deg, ${sideColor} 0%, ${darkenHex(color, 0.4)} 100%)`,
+            background: `linear-gradient(90deg, ${rightFace}, ${darkenHex(rightFace, 0.1)})`,
             transformOrigin: "left",
             transform: "rotateY(90deg)",
           }}
         />
-
         <span
-          className="absolute top-0 bottom-0 rounded-l-[5px]"
+          className="absolute bottom-0 top-0 rounded-l-[5px]"
           style={{
-            width: depth,
+            width: totalDepth,
             right: "100%",
-            background: darkenHex(color, 0.12),
+            background: leftFace,
             transformOrigin: "right",
             transform: "rotateY(-90deg)",
           }}
@@ -192,95 +206,218 @@ function KeyCap({
 }
 
 export function KeyboardHeatmap({ keyCounts }: Props) {
-  const [hovered, setHovered] = useState<string | null>(null);
+  const canUsePortal = useSyncExternalStore(
+    () => () => undefined,
+    () => true,
+    () => false
+  );
+  const [activeKey, setActiveKey] = useState<ActiveKey | null>(null);
+  const [tooltipPosition, setTooltipPosition] =
+    useState<TooltipPosition | null>(null);
+  const keyRefs = useRef(new Map<string, HTMLButtonElement>());
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
-  const maxCount = useMemo(() => {
-    let max = 1;
-    for (const key of KEYBOARD_LAYOUT) {
-      max = Math.max(max, resolveKeyCount(key.id, keyCounts));
-    }
-    return max;
-  }, [keyCounts]);
+  const resolvedKeys = useMemo(
+    () =>
+      KEYBOARD_LAYOUT.map((keyDef) => ({
+        keyDef,
+        count: resolveKeyCount(keyDef.id, keyCounts),
+      })),
+    [keyCounts]
+  );
+  const domainMax = useMemo(
+    () => heatDomain(resolvedKeys.map(({ count }) => count)),
+    [resolvedKeys]
+  );
+  const activeEntry = activeKey
+    ? resolvedKeys.find(({ keyDef }) => keyDef.id === activeKey.id) ?? null
+    : null;
 
-  const unit = KEYBOARD_UNIT;
-  const gap = KEY_GAP;
-  const width = KEYBOARD_WIDTH_U * unit;
-  const height = KEYBOARD_HEIGHT_U * unit;
-  const chassisDepth = 32;
+  const registerRef = useCallback(
+    (id: string, node: HTMLButtonElement | null) => {
+      if (node) keyRefs.current.set(id, node);
+      else keyRefs.current.delete(id);
+    },
+    []
+  );
+
+  const updateTooltipPosition = useCallback(() => {
+    if (!activeKey) return;
+    const anchor = keyRefs.current.get(activeKey.id);
+    const tooltip = tooltipRef.current;
+    if (!anchor || !tooltip) return;
+
+    const anchorRect = anchor.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const preferredTop = anchorRect.top - tooltipRect.height - 10;
+    const top =
+      preferredTop >= VIEWPORT_INSET
+        ? preferredTop
+        : Math.min(
+            window.innerHeight - tooltipRect.height - VIEWPORT_INSET,
+            anchorRect.bottom + 10
+          );
+    const left = Math.min(
+      window.innerWidth - tooltipRect.width - VIEWPORT_INSET,
+      Math.max(
+        VIEWPORT_INSET,
+        anchorRect.left + anchorRect.width / 2 - tooltipRect.width / 2
+      )
+    );
+    setTooltipPosition({ left, top });
+  }, [activeKey]);
+
+  useLayoutEffect(() => {
+    updateTooltipPosition();
+  }, [activeKey, updateTooltipPosition]);
+
+  useEffect(() => {
+    if (!activeKey) return;
+    const update = () => requestAnimationFrame(updateTooltipPosition);
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [activeKey, updateTooltipPosition]);
+
+  useEffect(() => {
+    if (!activeKey?.pinned) return;
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      const activeElement = keyRefs.current.get(activeKey.id);
+      if (!activeElement?.contains(event.target as Node)) setActiveKey(null);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setActiveKey(null);
+      }
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [activeKey]);
+
+  const handleHover = (id: string) => {
+    if (!activeKey?.pinned) setActiveKey({ id, pinned: false });
+  };
+  const handleFocus = (id: string) => {
+    setActiveKey({ id, pinned: false });
+  };
+  const handleLeave = (id: string) => {
+    setActiveKey((current) =>
+      current?.id === id && !current.pinned ? null : current
+    );
+  };
+  const handlePin = (id: string) => {
+    setActiveKey((current) =>
+      current?.id === id && current.pinned ? null : { id, pinned: true }
+    );
+  };
+
+  const width = KEYBOARD_WIDTH_U * KEYBOARD_UNIT;
+  const height = KEYBOARD_HEIGHT_U * KEYBOARD_UNIT;
+  const chassisDepth = 24;
 
   return (
     <div className="keyboard-stage relative mx-auto w-full max-w-[1320px]">
-      <div className="keyboard-scroll mx-auto w-full overflow-x-auto overflow-y-visible sm:overflow-visible">
+      <div className="keyboard-edge-fade keyboard-edge-fade-left" />
+      <div className="keyboard-edge-fade keyboard-edge-fade-right" />
+      <div className="keyboard-scroll mx-auto w-full overflow-x-auto overflow-y-hidden">
         <div
           className="keyboard-scene relative mx-auto"
           style={{
-            width: "max(100%, 720px)",
+            width: "var(--kb-scene-width)",
             maxWidth: 1180,
-            aspectRatio: "var(--kb-aspect, 1.8 / 1)",
-            perspective: "var(--kb-perspective, 1100px)",
-            perspectiveOrigin: "50% 35%",
+            aspectRatio: "var(--kb-aspect)",
+            perspective: "var(--kb-perspective)",
+            perspectiveOrigin: "50% 32%",
           }}
         >
           <div
-            className="keyboard-plate absolute left-1/2 top-[10%] origin-center"
+            className="keyboard-plate absolute left-1/2 top-[8%] origin-center"
             style={{
               width,
               height,
               transform:
-                "translateX(-50%) rotateX(var(--kb-tilt, 62deg)) rotateZ(var(--kb-yaw, -35deg)) scale(var(--kb-scale, 0.84))",
+                "translateX(-50%) rotateX(var(--kb-tilt)) rotateZ(var(--kb-yaw)) scale(var(--kb-scale))",
               transformStyle: "preserve-3d",
             }}
           >
+            <div className="keyboard-ground-shadow pointer-events-none absolute -inset-[28px] rounded-[28px]" />
             <div
-              className="absolute -inset-[24px] rounded-[24px]"
+              className="keyboard-chassis absolute -inset-[22px] rounded-[22px]"
               style={{
-                background:
-                  "linear-gradient(155deg, #ffffff 0%, #f4f6f8 45%, #e4e9ee 100%)",
                 transform: `translateZ(-${chassisDepth}px)`,
-                boxShadow:
-                  "0 70px 120px rgba(40, 55, 75, 0.24), 0 28px 48px rgba(40, 55, 75, 0.14)",
                 transformStyle: "preserve-3d",
               }}
             >
               <div
-                className="absolute left-0 right-0 rounded-b-[24px]"
+                className="keyboard-chassis-front absolute left-0 right-0 rounded-b-[22px]"
                 style={{
                   height: chassisDepth,
                   top: "100%",
-                  background:
-                    "linear-gradient(180deg, #d5dce6 0%, #b9c3ce 100%)",
                   transformOrigin: "top",
                   transform: "rotateX(-90deg)",
                 }}
               />
               <div
-                className="absolute top-0 bottom-0 rounded-r-[20px]"
+                className="keyboard-chassis-right absolute bottom-0 top-0 rounded-r-[18px]"
                 style={{
                   width: chassisDepth,
                   left: "100%",
-                  background:
-                    "linear-gradient(90deg, #c8d1db 0%, #aeb8c4 100%)",
                   transformOrigin: "left",
                   transform: "rotateY(90deg)",
                 }}
               />
             </div>
 
-            {KEYBOARD_LAYOUT.map((keyDef) => (
+            {resolvedKeys.map(({ keyDef, count }) => (
               <KeyCap
                 key={keyDef.id}
                 keyDef={keyDef}
-                count={resolveKeyCount(keyDef.id, keyCounts)}
-                maxCount={maxCount}
-                unit={unit}
-                gap={gap}
-                hovered={hovered === keyDef.id}
-                onHover={setHovered}
+                count={count}
+                domainMax={domainMax}
+                active={activeKey?.id === keyDef.id}
+                registerRef={registerRef}
+                onHover={handleHover}
+                onFocusKey={handleFocus}
+                onLeave={handleLeave}
+                onPin={handlePin}
               />
             ))}
           </div>
         </div>
       </div>
+
+      {canUsePortal && activeEntry
+        ? createPortal(
+            <div
+              ref={tooltipRef}
+              id={TOOLTIP_ID}
+              role="tooltip"
+              className="keyboard-tooltip pointer-events-none fixed z-[1000] rounded-md px-3 py-2 font-mono text-xs tabular-nums"
+              style={{
+                left: tooltipPosition?.left ?? 0,
+                top: tooltipPosition?.top ?? 0,
+                visibility: tooltipPosition ? "visible" : "hidden",
+              }}
+            >
+              <span className="font-display font-semibold">
+                {activeEntry.keyDef.label}
+              </span>
+              <span className="mx-1.5 opacity-45">/</span>
+              {formatCount(activeEntry.count)} 次
+              {activeKey?.pinned && (
+                <span className="ml-2 opacity-55">Esc 关闭</span>
+              )}
+            </div>,
+            document.body
+          )
+        : null}
     </div>
   );
 }

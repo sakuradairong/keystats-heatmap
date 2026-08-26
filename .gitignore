@@ -12,6 +12,16 @@
 
 # testing
 /coverage
+/playwright-report
+/test-results
+
+# personal KeyStats exports
+/KeyStats-Export-*.json
+/public/KeyStats-Export-*.json
+/daily_stats.json
+/history.json
+/public/daily_stats.json
+/public/history.json
 
 # next.js
 /.next/

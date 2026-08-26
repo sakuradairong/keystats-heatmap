@@ -1,17 +1,7 @@
 export type DailyStats = {
   date: string;
-  keyPresses: number;
+  keyPresses: number | null;
   keyPressCounts: Record<string, number>;
-  leftClicks?: number;
-  rightClicks?: number;
-  middleClicks?: number;
-  sideBackClicks?: number;
-  sideForwardClicks?: number;
-  mouseDistance?: number;
-  scrollDistance?: number;
-  peakKPS?: number;
-  peakCPS?: number;
-  appStats?: Record<string, unknown>;
 };
 
 export type KeyStatsExport = {
@@ -48,6 +38,7 @@ function normalizeHeatmapKey(rawKey: string): string | null {
   if (!trimmed) return null;
 
   const upper = trimmed.toUpperCase();
+  if (upper === "+") return "=";
   if (upper.length === 1) return upper;
 
   if (upper.startsWith("F") && /^\d+$/.test(upper.slice(1))) {
@@ -82,14 +73,14 @@ function normalizeHeatmapKey(rawKey: string): string | null {
     OPTION: "Option",
     OPT: "Option",
     ALT: "Option",
-    MENU: "Option",
+    MENU: "Apps",
     LALT: "LAlt",
     LMENU: "LAlt",
     RALT: "RAlt",
     RMENU: "RAlt",
     SHIFT: "Shift",
     LSHIFT: "Shift",
-    RSHIFT: "Shift",
+    RSHIFT: "RShift",
     FN: "Fn",
     FUNCTION: "Fn",
     APPS: "Apps",
@@ -155,6 +146,18 @@ function normalizeHeatmapKey(rawKey: string): string | null {
   return aliases[upper] ?? null;
 }
 
+function tokenizeShortcut(rawKey: string): string[] {
+  const numPlusMarker = "__KEYSTATS_NUM_PLUS__";
+  const protectedKey = rawKey.replace(/num\+/gi, numPlusMarker);
+  const tokens = protectedKey
+    .split("+")
+    .map((part) => part.replaceAll(numPlusMarker, "Num+").trim())
+    .filter(Boolean);
+
+  if (protectedKey.includes("++")) tokens.push("+");
+  return tokens;
+}
+
 export function aggregateKeyboardHeatmapCounts(
   keyPressCounts: Record<string, number>
 ): Record<string, number> {
@@ -165,8 +168,8 @@ export function aggregateKeyboardHeatmapCounts(
   };
 
   for (const [rawKey, rawCount] of Object.entries(keyPressCounts ?? {})) {
-    const count = Math.max(0, Number(rawCount) || 0);
-    if (count <= 0) continue;
+    const count = Number(rawCount);
+    if (!Number.isFinite(count) || count <= 0) continue;
 
     const exact = normalizeHeatmapKey(rawKey);
     if (exact) {
@@ -174,17 +177,7 @@ export function aggregateKeyboardHeatmapCounts(
       continue;
     }
 
-    if (rawKey.toLowerCase().includes("num+")) {
-      add("Num+", count);
-    }
-
-    const components = rawKey
-      .split("+")
-      .map((part) => part.trim())
-      .filter(Boolean);
-
-    const parts = components.length > 0 ? components : [rawKey.trim()];
-    for (const part of parts) {
+    for (const part of tokenizeShortcut(rawKey)) {
       const normalized = normalizeHeatmapKey(part);
       if (normalized) add(normalized, count);
     }
@@ -193,36 +186,58 @@ export function aggregateKeyboardHeatmapCounts(
   return aggregated;
 }
 
-function normalizeDailyStats(raw: Partial<DailyStats> | null | undefined): DailyStats | null {
+function normalizeCountRecord(value: unknown): Record<string, number> | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+
+  const normalized: Record<string, number> = {};
+  for (const [key, rawCount] of Object.entries(value)) {
+    if (
+      typeof rawCount !== "number" ||
+      !Number.isFinite(rawCount) ||
+      rawCount < 0
+    ) {
+      return null;
+    }
+    normalized[key] = rawCount;
+  }
+  return normalized;
+}
+
+function normalizeDailyStats(
+  raw: Partial<DailyStats> | null | undefined
+): DailyStats | null {
   if (!raw) return null;
   const date = toDateKey(raw.date as string);
   if (!date) return null;
 
+  const keyPressCounts = normalizeCountRecord(raw.keyPressCounts);
+  if (!keyPressCounts) return null;
+
+  const rawKeyPresses = (raw as { keyPresses?: unknown }).keyPresses;
+  if (
+    rawKeyPresses !== undefined &&
+    rawKeyPresses !== null &&
+    (typeof rawKeyPresses !== "number" ||
+      !Number.isFinite(rawKeyPresses) ||
+      rawKeyPresses < 0)
+  ) {
+    return null;
+  }
+
   return {
     date,
-    keyPresses: Math.max(0, Number(raw.keyPresses) || 0),
-    keyPressCounts: raw.keyPressCounts ?? {},
-    leftClicks: raw.leftClicks,
-    rightClicks: raw.rightClicks,
-    middleClicks: raw.middleClicks,
-    sideBackClicks: raw.sideBackClicks,
-    sideForwardClicks: raw.sideForwardClicks,
-    mouseDistance: raw.mouseDistance,
-    scrollDistance: raw.scrollDistance,
-    peakKPS: raw.peakKPS,
-    peakCPS: raw.peakCPS,
-    appStats: raw.appStats,
+    keyPresses: rawKeyPresses == null ? null : rawKeyPresses,
+    keyPressCounts,
   };
 }
 
 export function parseKeyStatsExport(input: unknown): KeyStatsExport {
-  if (!input || typeof input !== "object") {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
     throw new Error("无效的 JSON：根节点必须是对象");
   }
 
   const data = input as Record<string, unknown>;
 
-  // Direct daily_stats.json / history.json fallbacks
   if (
     data.keyPressCounts &&
     typeof data.keyPressCounts === "object" &&
@@ -234,7 +249,6 @@ export function parseKeyStatsExport(input: unknown): KeyStatsExport {
     return {
       version: 1,
       scope: "currentDevice",
-      exportedAt: new Date().toISOString(),
       currentStats: daily,
       history: { [daily.date]: daily },
     };
@@ -247,13 +261,19 @@ export function parseKeyStatsExport(input: unknown): KeyStatsExport {
       (value) =>
         value &&
         typeof value === "object" &&
-        "keyPressCounts" in (value as object)
+        !Array.isArray(value) &&
+        "keyPressCounts" in value
     )
   ) {
     const history: Record<string, DailyStats> = {};
     for (const [key, value] of Object.entries(data)) {
       const daily = normalizeDailyStats(value as Partial<DailyStats>);
-      if (daily) history[toDateKey(key) || daily.date] = daily;
+      if (!daily) continue;
+      const historyDate = toDateKey(key) || daily.date;
+      if (historyDate !== daily.date) {
+        throw new Error(`history 日期不一致：${historyDate} 与 ${daily.date}`);
+      }
+      history[historyDate] = daily;
     }
     const dates = Object.keys(history).sort();
     if (dates.length === 0) throw new Error("历史记录为空");
@@ -261,19 +281,34 @@ export function parseKeyStatsExport(input: unknown): KeyStatsExport {
     return {
       version: 1,
       scope: "currentDevice",
-      exportedAt: new Date().toISOString(),
       currentStats: latest,
       history,
     };
   }
 
-  const currentStats = normalizeDailyStats(data.currentStats as Partial<DailyStats>);
-  const historyRaw = (data.history ?? {}) as Record<string, Partial<DailyStats>>;
+  const currentStats = normalizeDailyStats(
+    data.currentStats as Partial<DailyStats>
+  );
+  if (
+    data.history != null &&
+    (typeof data.history !== "object" || Array.isArray(data.history))
+  ) {
+    throw new Error("history 必须是以日期为键的对象");
+  }
+  const historyRaw = (data.history ?? {}) as Record<
+    string,
+    Partial<DailyStats>
+  >;
   const history: Record<string, DailyStats> = {};
 
   for (const [key, value] of Object.entries(historyRaw)) {
     const daily = normalizeDailyStats(value);
-    if (daily) history[toDateKey(key) || daily.date] = daily;
+    if (!daily) continue;
+    const historyDate = toDateKey(key) || daily.date;
+    if (historyDate !== daily.date) {
+      throw new Error(`history 日期不一致：${historyDate} 与 ${daily.date}`);
+    }
+    history[historyDate] = daily;
   }
 
   if (currentStats) {
@@ -285,18 +320,13 @@ export function parseKeyStatsExport(input: unknown): KeyStatsExport {
   }
 
   const fallback =
-    currentStats ??
-    history[
-      Object.keys(history).sort().at(-1)!
-    ];
+    currentStats ?? history[Object.keys(history).sort().at(-1)!];
 
   return {
     version: Number(data.version) || 1,
     scope: typeof data.scope === "string" ? data.scope : "currentDevice",
     exportedAt:
-      typeof data.exportedAt === "string"
-        ? data.exportedAt
-        : new Date().toISOString(),
+      typeof data.exportedAt === "string" ? data.exportedAt : undefined,
     currentStats: fallback,
     history,
   };
@@ -313,7 +343,9 @@ export function preferActiveDate(payload: KeyStatsExport): string {
   for (let i = dates.length - 1; i >= 0; i -= 1) {
     const daily = payload.history[dates[i]];
     const presses = daily?.keyPresses ?? 0;
-    const hasCounts = Object.keys(daily?.keyPressCounts ?? {}).length > 0;
+    const hasCounts = Object.values(daily?.keyPressCounts ?? {}).some(
+      (count) => Number(count) > 0
+    );
     if (presses > 0 || hasCounts) return dates[i];
   }
 
@@ -329,11 +361,11 @@ export function getDayFromExport(
   const daily = payload.history[date] ?? payload.currentStats;
   const rawCounts = daily.keyPressCounts ?? {};
   const keyCounts = aggregateKeyboardHeatmapCounts(rawCounts);
-  const summed = Object.values(keyCounts).reduce((a, b) => a + b, 0);
+  const summed = Object.values(keyCounts).reduce((total, count) => total + count, 0);
 
   return {
     date: toDateKey(daily.date) || date,
-    totalKeyPresses: Math.max(0, daily.keyPresses || 0) || summed,
+    totalKeyPresses: daily.keyPresses ?? summed,
     keyCounts,
     rawCounts,
   };
@@ -353,6 +385,7 @@ export function topKeys(
   limit = 3
 ): Array<{ key: string; count: number }> {
   return Object.entries(keyCounts)
+    .filter(([, count]) => Number.isFinite(count) && count > 0)
     .sort((a, b) => b[1] - a[1])
     .slice(0, limit)
     .map(([key, count]) => ({ key, count }));

@@ -116,15 +116,7 @@
       "Alt+Tab": 235,
       "Win+D": 48,
       "Ctrl+F": 90
-    },
-    "leftClicks": 17223,
-    "rightClicks": 2871,
-    "middleClicks": 478,
-    "mouseDistance": 1196050,
-    "scrollDistance": 306189,
-    "peakKPS": 5.35,
-    "peakCPS": 2.9,
-    "appStats": {}
+    }
   },
   "history": {
     "2026-08-14": {
@@ -241,15 +233,7 @@
         "Alt+Tab": 114,
         "Win+D": 23,
         "Ctrl+F": 44
-      },
-      "leftClicks": 8517,
-      "rightClicks": 1420,
-      "middleClicks": 237,
-      "mouseDistance": 591488,
-      "scrollDistance": 151421,
-      "peakKPS": 4.35,
-      "peakCPS": 2.1,
-      "appStats": {}
+      }
     },
     "2026-08-15": {
       "date": "2026-08-15",
@@ -365,15 +349,7 @@
         "Alt+Tab": 226,
         "Win+D": 38,
         "Ctrl+F": 70
-      },
-      "leftClicks": 15155,
-      "rightClicks": 2526,
-      "middleClicks": 421,
-      "mouseDistance": 1052450,
-      "scrollDistance": 269427,
-      "peakKPS": 5.35,
-      "peakCPS": 2.5,
-      "appStats": {}
+      }
     },
     "2026-08-16": {
       "date": "2026-08-16",
@@ -489,15 +465,7 @@
         "Alt+Tab": 179,
         "Win+D": 37,
         "Ctrl+F": 69
-      },
-      "leftClicks": 12906,
-      "rightClicks": 2151,
-      "middleClicks": 359,
-      "mouseDistance": 896275,
-      "scrollDistance": 229446,
-      "peakKPS": 6.35,
-      "peakCPS": 2.9,
-      "appStats": {}
+      }
     },
     "2026-08-17": {
       "date": "2026-08-17",
@@ -613,15 +581,7 @@
         "Alt+Tab": 138,
         "Win+D": 28,
         "Ctrl+F": 53
-      },
-      "leftClicks": 10338,
-      "rightClicks": 1723,
-      "middleClicks": 287,
-      "mouseDistance": 717913,
-      "scrollDistance": 183786,
-      "peakKPS": 7.35,
-      "peakCPS": 2.1,
-      "appStats": {}
+      }
     },
     "2026-08-18": {
       "date": "2026-08-18",
@@ -737,15 +697,7 @@
         "Alt+Tab": 252,
         "Win+D": 51,
         "Ctrl+F": 96
-      },
-      "leftClicks": 17196,
-      "rightClicks": 2866,
-      "middleClicks": 478,
-      "mouseDistance": 1194150,
-      "scrollDistance": 305702,
-      "peakKPS": 8.35,
-      "peakCPS": 2.5,
-      "appStats": {}
+      }
     },
     "2026-08-19": {
       "date": "2026-08-19",
@@ -861,15 +813,7 @@
         "Alt+Tab": 204,
         "Win+D": 42,
         "Ctrl+F": 78
-      },
-      "leftClicks": 14749,
-      "rightClicks": 2458,
-      "middleClicks": 410,
-      "mouseDistance": 1024238,
-      "scrollDistance": 262205,
-      "peakKPS": 4.35,
-      "peakCPS": 2.9,
-      "appStats": {}
+      }
     },
     "2026-08-20": {
       "date": "2026-08-20",
@@ -985,15 +929,7 @@
         "Alt+Tab": 161,
         "Win+D": 33,
         "Ctrl+F": 62
-      },
-      "leftClicks": 12131,
-      "rightClicks": 2022,
-      "middleClicks": 337,
-      "mouseDistance": 842425,
-      "scrollDistance": 215661,
-      "peakKPS": 5.35,
-      "peakCPS": 2.1,
-      "appStats": {}
+      }
     },
     "2026-08-21": {
       "date": "2026-08-21",
@@ -1109,15 +1045,7 @@
         "Alt+Tab": 150,
         "Win+D": 31,
         "Ctrl+F": 57
-      },
-      "leftClicks": 10382,
-      "rightClicks": 1730,
-      "middleClicks": 288,
-      "mouseDistance": 720975,
-      "scrollDistance": 184570,
-      "peakKPS": 6.35,
-      "peakCPS": 2.5,
-      "appStats": {}
+      }
     },
     "2026-08-22": {
       "date": "2026-08-22",
@@ -1233,15 +1161,7 @@
         "Alt+Tab": 228,
         "Win+D": 47,
         "Ctrl+F": 87
-      },
-      "leftClicks": 16574,
-      "rightClicks": 2762,
-      "middleClicks": 460,
-      "mouseDistance": 1150975,
-      "scrollDistance": 294650,
-      "peakKPS": 7.35,
-      "peakCPS": 2.9,
-      "appStats": {}
+      }
     },
     "2026-08-23": {
       "date": "2026-08-23",
@@ -1357,15 +1277,7 @@
         "Alt+Tab": 183,
         "Win+D": 37,
         "Ctrl+F": 70
-      },
-      "leftClicks": 13973,
-      "rightClicks": 2329,
-      "middleClicks": 388,
-      "mouseDistance": 970363,
-      "scrollDistance": 248413,
-      "peakKPS": 8.35,
-      "peakCPS": 2.1,
-      "appStats": {}
+      }
     },
     "2026-08-24": {
       "date": "2026-08-24",
@@ -1481,15 +1393,7 @@
         "Alt+Tab": 176,
         "Win+D": 36,
         "Ctrl+F": 67
-      },
-      "leftClicks": 12349,
-      "rightClicks": 2058,
-      "middleClicks": 343,
-      "mouseDistance": 857588,
-      "scrollDistance": 219542,
-      "peakKPS": 4.35,
-      "peakCPS": 2.5,
-      "appStats": {}
+      }
     },
     "2026-08-25": {
       "date": "2026-08-25",
@@ -1605,15 +1509,7 @@
         "Alt+Tab": 235,
         "Win+D": 48,
         "Ctrl+F": 90
-      },
-      "leftClicks": 17223,
-      "rightClicks": 2871,
-      "middleClicks": 478,
-      "mouseDistance": 1196050,
-      "scrollDistance": 306189,
-      "peakKPS": 5.35,
-      "peakCPS": 2.9,
-      "appStats": {}
+      }
     }
   }
 }
