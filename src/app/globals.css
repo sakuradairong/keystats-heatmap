@@ -138,10 +138,10 @@
 
 .keyboard-stage {
   --kb-scale: 0.72;
-  --kb-tilt: 26deg;
-  --kb-yaw: -8deg;
-  --kb-aspect: 1.9 / 1;
-  --kb-perspective: 1500px;
+  --kb-tilt: 14deg;
+  --kb-yaw: -4deg;
+  --kb-aspect: 1.95 / 1;
+  --kb-perspective: 1800px;
   --kb-scene-width: 940px;
   isolation: isolate;
   animation: keyboard-enter 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -331,10 +331,10 @@
 
   .keyboard-stage {
     --kb-scale: 0.78;
-    --kb-tilt: 28deg;
-    --kb-yaw: -10deg;
-    --kb-aspect: 1.86 / 1;
-    --kb-perspective: 1450px;
+    --kb-tilt: 16deg;
+    --kb-yaw: -5deg;
+    --kb-aspect: 1.92 / 1;
+    --kb-perspective: 1750px;
     --kb-scene-width: max(100%, 980px);
   }
 
@@ -399,7 +399,7 @@
 @media (max-width: 767px) {
   .keyboard-stage {
     --kb-scene-width: 940px;
-    --kb-perspective: 1500px;
+    --kb-perspective: 1800px;
   }
 }
 
