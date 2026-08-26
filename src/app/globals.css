@@ -142,7 +142,7 @@
   --kb-aspect: 1.9 / 1;
   --kb-perspective: 1800px;
   --kb-scene-width: max(100%, 1180px);
-  --kb-edge-aa: 0.75px;
+  --kb-edge-aa: 1px;
   isolation: isolate;
   animation: keyboard-enter 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
