@@ -88,8 +88,9 @@ function KeyCap({
     <button
       ref={(node) => registerRef(keyDef.id, node)}
       type="button"
-      className="keycap absolute origin-bottom border-0 bg-transparent p-0 text-left"
+      className="keycap absolute border-0 bg-transparent p-0 text-left"
       data-active={count > 0 ? "true" : "false"}
+      data-hover={active ? "true" : "false"}
       data-key-id={keyDef.id}
       style={{
         left: keyDef.x * unit,
@@ -97,8 +98,7 @@ function KeyCap({
         width,
         height,
         transformStyle: "preserve-3d",
-        // Keep stacking by row — jumping to 999 steals hits from neighbors.
-        zIndex: active ? baseZ + 2 : baseZ,
+        zIndex: baseZ,
       }}
       onFocus={() => onFocusKey(keyDef.id)}
       onBlur={(event) => onBlurKey(keyDef.id, event.relatedTarget)}
@@ -208,6 +208,7 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
   const tooltipRef = useRef<HTMLDivElement>(null);
   const plateRef = useRef<HTMLDivElement>(null);
   const activeKeyRef = useRef<ActiveKey | null>(null);
+  const clearHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   activeKeyRef.current = activeKey;
 
   const resolvedKeys = useMemo(
@@ -316,12 +317,33 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
     };
   }, [activeKey]);
 
+  const cancelClearHover = useCallback(() => {
+    if (clearHoverTimerRef.current !== null) {
+      clearTimeout(clearHoverTimerRef.current);
+      clearHoverTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleClearHover = useCallback(() => {
+    cancelClearHover();
+    clearHoverTimerRef.current = setTimeout(() => {
+      clearHoverTimerRef.current = null;
+      setActiveKey((current) => (current && !current.pinned ? null : current));
+    }, 48);
+  }, [cancelClearHover]);
+
+  useEffect(() => () => cancelClearHover(), [cancelClearHover]);
+
   const handlePlatePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.pointerType === "touch") return;
     if (activeKeyRef.current?.pinned) return;
     const id = keyIdFromPoint(event.clientX, event.clientY);
-    // Stay on the last key across gaps so the tooltip does not flicker/bounce.
-    if (!id) return;
+    if (!id) {
+      // Brief grace across key gaps; clear if resting on chassis / empty plate.
+      scheduleClearHover();
+      return;
+    }
+    cancelClearHover();
     setActiveKey((current) => {
       if (current?.pinned) return current;
       if (current?.id === id) return current;
@@ -332,6 +354,7 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
   const handlePlatePointerLeave = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.pointerType === "touch") return;
     if (activeKeyRef.current?.pinned) return;
+    cancelClearHover();
     setActiveKey((current) => (current && !current.pinned ? null : current));
   };
 

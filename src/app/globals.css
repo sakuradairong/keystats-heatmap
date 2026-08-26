@@ -226,7 +226,6 @@
 }
 
 .keycap-prism {
-  transition: filter 160ms ease;
   transform-style: preserve-3d;
 }
 
@@ -240,6 +239,7 @@
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
+  transition: box-shadow 140ms ease;
 }
 
 .keycap-face-front,
@@ -255,14 +255,11 @@
   transform: translateZ(1px);
 }
 
-.keycap:hover .keycap-prism,
-.keycap:focus-visible .keycap-prism {
-  filter: brightness(1.04) saturate(1.03);
-}
-
+/* Never use filter on .keycap-prism — it flattens preserve-3d and collapses key height. */
+.keycap[data-hover="true"] .keycap-top,
 .keycap:focus-visible .keycap-top {
-  outline: 3px solid #fffaf5;
-  outline-offset: 2px;
+  outline: 2px solid #fffaf5;
+  outline-offset: 1px;
 }
 
 .keyboard-tooltip {

@@ -54,11 +54,15 @@ test("keeps tooltip continuous while moving across neighboring keys", async ({
   await page.mouse.move(aBox!.x + aBox!.width / 2, aBox!.y + aBox!.height / 2);
   await expect(page.getByRole("tooltip")).toContainText("A");
   await page.mouse.move(
-    (aBox!.x + aBox!.width + sBox!.x) / 2,
-    aBox!.y + aBox!.height / 2,
-    { steps: 12 }
+    sBox!.x + sBox!.width / 2,
+    sBox!.y + sBox!.height / 2,
+    { steps: 16 }
   );
-  await expect(page.getByRole("tooltip")).toBeVisible();
+  await expect(page.getByRole("tooltip")).toContainText("S");
+
+  // Leaving the keyboard plate should clear hover.
+  await page.mouse.move(16, 16);
+  await expect(page.getByRole("tooltip")).toBeHidden({ timeout: 1000 });
 });
 
 test("moves a pinned tooltip with keyboard focus", async ({ page }) => {
