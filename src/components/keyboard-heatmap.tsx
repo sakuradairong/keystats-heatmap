@@ -206,6 +206,8 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
     useState<TooltipPosition | null>(null);
   const keyRefs = useRef(new Map<string, HTMLButtonElement>());
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const plateRef = useRef<HTMLDivElement>(null);
   const activeKeyRef = useRef<ActiveKey | null>(null);
   const clearHoverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -334,6 +336,54 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
 
   useEffect(() => () => cancelClearHover(), [cancelClearHover]);
 
+  useLayoutEffect(() => {
+    const stage = stageRef.current;
+    const scroll = scrollRef.current;
+    const plate = plateRef.current;
+    if (!stage || !scroll || !plate) return;
+
+    const fitPlate = () => {
+      const available = scroll.clientWidth;
+      if (available <= 0) return;
+      const baseScale =
+        Number.parseFloat(
+          getComputedStyle(stage).getPropertyValue("--kb-scale")
+        ) || 1;
+      const fitRaw = getComputedStyle(stage)
+        .getPropertyValue("--kb-fit-scale")
+        .trim();
+      const parsedFit = Number.parseFloat(fitRaw);
+      const currentFit = Number.isFinite(parsedFit) ? parsedFit : baseScale;
+      const rect = plate.getBoundingClientRect();
+      if (rect.width <= 1) return;
+      const naturalWidth = rect.width / currentFit;
+      let next = Math.min(baseScale, (available - 24) / naturalWidth);
+      if (!Number.isFinite(next) || next <= 0) return;
+      stage.style.setProperty("--kb-fit-scale", next.toFixed(4));
+
+      // Transformed overflow can still exceed the scrollport; tighten once more.
+      requestAnimationFrame(() => {
+        const overflow = scroll.scrollWidth - scroll.clientWidth;
+        if (overflow <= 1) return;
+        const tightened =
+          next * (scroll.clientWidth / scroll.scrollWidth) * 0.985;
+        if (!Number.isFinite(tightened) || tightened <= 0) return;
+        next = Math.min(baseScale, tightened);
+        stage.style.setProperty("--kb-fit-scale", next.toFixed(4));
+      });
+    };
+
+    const frameFit = () => requestAnimationFrame(fitPlate);
+    frameFit();
+    const observer = new ResizeObserver(frameFit);
+    observer.observe(scroll);
+    window.addEventListener("resize", frameFit);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", frameFit);
+    };
+  }, []);
+
   const handlePlatePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.pointerType === "touch") return;
     if (activeKeyRef.current?.pinned) return;
@@ -385,18 +435,24 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
   const chassisDepth = 24;
 
   return (
-    <div className="keyboard-stage relative mx-auto w-full max-w-[1320px]">
+    <div
+      ref={stageRef}
+      className="keyboard-stage relative mx-auto w-full max-w-[1320px]"
+    >
       <div className="keyboard-edge-fade keyboard-edge-fade-left" />
       <div className="keyboard-edge-fade keyboard-edge-fade-right" />
-      <div className="keyboard-scroll mx-auto w-full overflow-x-auto overflow-y-hidden">
+      <div
+        ref={scrollRef}
+        className="keyboard-scroll mx-auto w-full overflow-x-auto overflow-y-hidden"
+      >
         <div
           className="keyboard-scene relative mx-auto"
           style={{
             width: "var(--kb-scene-width)",
-            maxWidth: 1180,
+            maxWidth: "100%",
             aspectRatio: "var(--kb-aspect)",
             perspective: "var(--kb-perspective)",
-            perspectiveOrigin: "50% 45%",
+            perspectiveOrigin: "50% 42%",
           }}
         >
           <div
@@ -408,7 +464,7 @@ export function KeyboardHeatmap({ keyCounts }: Props) {
               width,
               height,
               transform:
-                "translate3d(-50%, 0, 0) rotateX(var(--kb-tilt)) rotateZ(var(--kb-yaw)) scale(var(--kb-scale))",
+                "translate3d(-50%, 0, 0) rotateX(var(--kb-tilt)) rotateZ(var(--kb-yaw)) scale(var(--kb-fit-scale, var(--kb-scale)))",
               transformStyle: "preserve-3d",
             }}
           >

@@ -137,12 +137,13 @@
 }
 
 .keyboard-stage {
-  --kb-scale: 0.72;
+  --kb-scale: 0.88;
+  --kb-fit-scale: 0.88;
   --kb-tilt: 14deg;
   --kb-yaw: -4deg;
   --kb-aspect: 1.95 / 1;
   --kb-perspective: 1800px;
-  --kb-scene-width: 940px;
+  --kb-scene-width: 100%;
   isolation: isolate;
   animation: keyboard-enter 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -330,17 +331,18 @@
   }
 
   .keyboard-stage {
-    --kb-scale: 0.78;
+    --kb-scale: 0.88;
     --kb-tilt: 16deg;
     --kb-yaw: -5deg;
     --kb-aspect: 1.92 / 1;
     --kb-perspective: 1750px;
-    --kb-scene-width: max(100%, 980px);
+    --kb-scene-width: 100%;
   }
 
   .keyboard-scroll {
     padding-top: 0.5rem;
     padding-bottom: 2rem;
+    overflow-x: hidden;
   }
 }
 
@@ -366,23 +368,32 @@
   }
 
   .keyboard-stage {
-    --kb-scale: 0.82;
+    --kb-scale: 0.9;
     --kb-tilt: 16deg;
     --kb-yaw: -5deg;
     --kb-aspect: 1.9 / 1;
     --kb-perspective: 1700px;
-    --kb-scene-width: max(100%, 1080px);
+    --kb-scene-width: 100%;
+  }
+
+  .keyboard-scroll {
+    overflow-x: visible;
+    overflow-y: visible;
+  }
+
+  .keyboard-edge-fade {
+    display: none;
   }
 }
 
 @media (min-width: 1280px) {
   .keyboard-stage {
-    --kb-scale: 0.88;
+    --kb-scale: 0.92;
     --kb-tilt: 18deg;
     --kb-yaw: -6deg;
     --kb-aspect: 1.88 / 1;
     --kb-perspective: 1680px;
-    --kb-scene-width: min(100%, 1180px);
+    --kb-scene-width: 100%;
   }
 
   .keyboard-scroll {
@@ -396,9 +407,16 @@
   }
 }
 
+@media (min-width: 1440px) {
+  .keyboard-stage {
+    --kb-scale: 0.94;
+  }
+}
+
 @media (max-width: 767px) {
   .keyboard-stage {
-    --kb-scene-width: 940px;
+    --kb-scale: 0.88;
+    --kb-scene-width: 100%;
     --kb-perspective: 1800px;
   }
 }

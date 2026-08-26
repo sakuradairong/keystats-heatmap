@@ -135,23 +135,39 @@ test("keeps horizontal overflow inside the keyboard on mobile", async ({
   await expect(page.getByRole("tooltip")).toBeHidden();
 });
 
-test("keeps the keyboard reachable at the 1024px breakpoint", async ({
+test("fits the full keyboard including the numpad at 1024px", async ({
   page,
 }, testInfo) => {
   test.skip(testInfo.project.name !== "chromium-desktop");
   await page.setViewportSize({ width: 1024, height: 800 });
   await expectReady(page);
+  await page.locator(".keyboard-stage").scrollIntoViewIfNeeded();
+  await page.waitForTimeout(200);
 
   const dimensions = await page.evaluate(() => {
     const scroller = document.querySelector<HTMLElement>(".keyboard-scroll")!;
+    const numEnter = document.querySelector<HTMLElement>('[data-key-id="NumEnter"]');
+    const stage = document.querySelector<HTMLElement>(".keyboard-stage")!;
+    const numRect = numEnter?.getBoundingClientRect();
+    const stageRect = stage.getBoundingClientRect();
     return {
       viewport: window.innerWidth,
       documentWidth: document.documentElement.scrollWidth,
       scrollClient: scroller.clientWidth,
       scrollWidth: scroller.scrollWidth,
+      numEnterVisible:
+        !!numRect &&
+        numRect.right <= window.innerWidth - 4 &&
+        numRect.left >= 0,
+      numFullyInStage:
+        !!numRect &&
+        numRect.right <= stageRect.right + 2 &&
+        numRect.left >= stageRect.left - 2,
     };
   });
 
-  expect(dimensions.documentWidth).toBeLessThanOrEqual(dimensions.viewport);
-  expect(dimensions.scrollWidth).toBeGreaterThan(dimensions.scrollClient);
+  expect(dimensions.documentWidth).toBeLessThanOrEqual(dimensions.viewport + 1);
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.scrollClient + 4);
+  expect(dimensions.numEnterVisible).toBe(true);
+  expect(dimensions.numFullyInStage).toBe(true);
 });
